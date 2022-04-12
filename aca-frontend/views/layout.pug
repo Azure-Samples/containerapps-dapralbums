@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    link(rel="stylesheet" href="https://cdn.rtlcss.com/semantic-ui/2.4.1/semantic.rtl.min.css")
+    link(rel='stylesheet' href="/stylesheets/style.css")
+    script(type="text/javascript" src="app.js")
+
+  body
+   div(class="ui container")
+    h2(class="ui center aligned icon block header")
+      i(class="music icon")     
+        h1 Azure Container Apps Albums
+      div(class="four ui buttons")
+        button(class="ui button" onclick="parent.open('https://aka.ms/aca-docs')") Docs
+        button(class="ui button" onclick="parent.open('http://aka.ms/aca-roadmap')") Public Roadmap
+        button(class="ui button" onclick="parent.open('https://aka.ms/containerapps-discord')") Discord
+        button(class="ui button" onclick="parent.open('https://aka.ms/aca-mailinglist')") Mailing List
+    block content

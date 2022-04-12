@@ -1,0 +1,11 @@
+.album-title {
+  padding: 10px;
+  font: 20px "Lucida Grande", Helvetica, Arial, sans-serif;
+  color: black;
+}
+
+.meta-info {
+  padding: 10px;
+  font: 12px "Lucida Grande", Helvetica, Arial, sans-serif;
+  color: #666;
+}
