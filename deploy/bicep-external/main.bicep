@@ -12,6 +12,9 @@ param registryPassword string
 param registryUsername string
 param apiImage string
 param viewerImage string
+param stateStoreScopes array = [
+  'album-api'
+]
 
 
 
@@ -74,6 +77,20 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-03-01' = {
       }
     }
   }
+}
+
+module daprStateStore 'modules/dapr-statestore.bicep' = {
+  name: '${deployment().name}--dapr-statestore'
+  dependsOn:[
+    storageAccount
+    containerAppsEnv
+  ]
+  params: {
+    containerAppsEnvName : containerAppsEnvName
+    storage_account_name: storageAccountName
+    storage_container_name: blobContainerName
+    stateStoreScopes: stateStoreScopes
+}
 }
 
 module albumViewerCapp 'modules/container-app.bicep' = {
