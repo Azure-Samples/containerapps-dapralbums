@@ -3,18 +3,12 @@ location: eastus
 name: album-viewer
 resourceGroup: album-app
 type: Microsoft.App/containerApps
-tags:
-  tagname: MVP
 properties:
   kubeEnvironmentId: /subscriptions/x/resourceGroups/album-app/providers/Microsoft.App/managedEnvironments/x
   configuration:
     registries:
-      - passwordSecretRef: registry-pass
-        server: dapralbumacr.azurecr.io
-        username: kendallroden
-    secrets:
-      - name: registry-pass
-        value: x
+      server: dapralbumacr.azurecr.io
+      username: kendallroden
     activeRevisionsMode: Single
     ingress:
       external: true

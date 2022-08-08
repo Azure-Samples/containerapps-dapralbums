@@ -3,11 +3,11 @@
   "tasks": [
     {
       "label": "build",
-      "command": "/usr/bin/dotnet",
+      "command": "/usr/local/share/dotnet/dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/aca-csharp/aca-csharp.csproj",
+        "${workspaceFolder}/album-api/album-api.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -15,11 +15,11 @@
     },
     {
       "label": "publish",
-      "command": "/usr/bin/dotnet",
+      "command": "/usr/local/bin/dotnet",
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/aca-csharp/aca-csharp.csproj",
+        "${workspaceFolder}/album-api/album-api.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -27,23 +27,34 @@
     },
     {
       "label": "watch",
-      "command": "/usr/bin/dotnet",
+      "command": "/usr/local/bin/dotnet",
       "type": "process",
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/aca-csharp/aca-csharp.csproj"
+        "${workspaceFolder}/album-api/album-api.csproj"
       ],
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "Dapr Frontend",
+      "type": "shell",
+      "label": "npm install",
+      "command": "npm install",
+      "options": {
+        "cwd": "${workspaceFolder}/album-viewer"
+      },
+      "presentation": {
+        "close": true
+      }
+    },
+    {
+      "label": "Dapr up: Album Viewer",
       "command": "dapr",
       "args": [
         "run",
         "--app-id",
-        "nodeapp",
+        "album-viewer",
         "--app-port",
         "3000",
         "--dapr-grpc-port",
@@ -51,25 +62,83 @@
         "--dapr-http-port",
         "3180"
       ],
-      "problemMatcher": []
+      "isBackground": true,
+      "presentation": {
+        "panel": "new",
+        "group": "dapr-output",
+        "close": true
+      },
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "beginsPattern": "^.*Starting Dapr with id.*",
+          "endsPattern": "^.*up and running.*"
+        }
+      },
+      "dependsOn": ["npm install"]
     },
     {
-      "label": "Dapr API",
+      "label": "Dapr up: Album API",
       "command": "dapr",
       "args": [
         "run",
         "--app-id",
         "album-api",
         "--components-path",
-        "${workspaceFolder}/components",
+        "${workspaceFolder}/dapr-components/local",
         "--app-port",
-        "5000",
+        "80",
         "--dapr-grpc-port",
         "3501",
         "--dapr-http-port",
         "3500"
       ],
-      "problemMatcher": []
+      "isBackground": true,
+      "presentation": {
+        "panel": "new",
+        "group": "dapr-output",
+        "close": true
+      },
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "beginsPattern": "^.*Starting Dapr with id.*",
+          "endsPattern": "^.*up and running.*"
+        }
+      },
+      "dependsOn": ["build"]
+    },
+    {
+      "label": "Dapr down: Album API",
+      "command": "dapr",
+      "args": ["stop", "--app-id", "album-api"],
+      "problemMatcher": [],
+      "presentation": {
+        "close": true
+      }
+    },
+    {
+      "label": "Dapr down: Album Viewer",
+      "command": "dapr",
+      "args": ["stop", "--app-id", "album-viewer"],
+      "problemMatcher": [],
+      "presentation": {
+        "close": true
+      }
     }
   ]
 }

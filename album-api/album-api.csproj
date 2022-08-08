@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>aca_csharp_dapr</RootNamespace>
+    <RootNamespace>album_api</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

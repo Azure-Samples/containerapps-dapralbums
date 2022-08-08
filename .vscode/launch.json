@@ -3,33 +3,52 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "All services",
+      "configurations": ["Album API", "Album Viewer"]
+    }
+  ],
   "configurations": [
     {
-      "name": "Dapr Sample: Launch Frontend via npm",
+      "name": "Album Viewer",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/aca-frontend",
+      "cwd": "${workspaceFolder}/album-viewer",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run-script", "start"]
-    },
-    {
-      "name": "Dapr Sample: Launch Backend API",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/aca-csharp/bin/Debug/net6.0/aca-csharp.dll",
-      "args": [],
-      "cwd": "${workspaceFolder}/aca-csharp",
-      "stopAtEntry": false,
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["run-script", "start"],
+      "preLaunchTask": "Dapr up: Album Viewer",
+      "postDebugTask": "Dapr down: Album Viewer",
+      "env": {
+        "DAPR_HTTP_PORT": "3180",
+        "DAPR_GRPC_PORT": "3101",
+        "DAPR_METRICS_PORT": "9091",
+        "ALBUM_API": "album-api",
+        "PORT": "3000"
+      },
+      "console": "integratedTerminal",
       "serverReadyAction": {
         "action": "openExternally",
-        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-      },
+        "pattern": "listening on port ([0-9]+)",
+        "uriFormat": "http://localhost:%s"
+      }
+    },
+    {
+      "name": "Album API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Dapr up: Album API",
+      "postDebugTask": "Dapr down: Album API",
+      "program": "${workspaceFolder}/album-api/bin/Debug/net6.0/album-api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/album-api",
+      "stopAtEntry": false,
       "env": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "sourceFileMap": {
-        "/Views": "${workspaceFolder}/Views"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://*:5000;https://*:5001",
+        "DAPR_HTTP_PORT": "3500",
+        "DAPR_GRPC_PORT": "3501"
       }
     }
   ]
