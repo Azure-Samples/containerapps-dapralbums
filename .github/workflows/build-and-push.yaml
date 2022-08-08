@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-
+  IMAGE_NAME: ${{ github.repository }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
       contents: read
       packages: write
     outputs:
-      containerImage-api: ${{ steps.image-tag.outputs.image-album-api }}
+      containerImage-api: ${{ steps.image-tag.outputs.image-album-api}}
       containerImage-ui: ${{ steps.image-tag.outputs.image-album-viewer }}
     steps:
       - name: Checkout repository
@@ -64,8 +64,8 @@ jobs:
 
       - name: Output image tag
         id: image-tag
-        run: echo "::set-output name=image-${{ matrix.services.imageName }}::${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.services.imageName }}:sha-$(git rev-parse --short HEAD)" | tr '[:upper:]' '[:lower:]'
-
+        run: echo "::set-output name=image-${{ matrix.services.imageName }}::${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}:sha-$(git rev-parse --short HEAD)" | tr '[:upper:]' '[:lower:]'
+  
   deploy:
     if: github.repository != 'Azure-samples/containerapps-dapralbums'
     runs-on: ubuntu-latest
