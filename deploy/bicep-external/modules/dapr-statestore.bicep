@@ -1,7 +1,6 @@
 param storage_account_name string
 param storage_container_name string
 param containerAppsEnvName string
-param stateStoreScopes array
 
 resource caEnvironment  'Microsoft.App/managedEnvironments@2022-03-01' existing = {
   name: containerAppsEnvName
@@ -35,6 +34,6 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-01
         secretRef: 'storageaccountkey'
       }
     ]
-    scopes: stateStoreScopes
+    scopes: ['album-api']
   }
 }

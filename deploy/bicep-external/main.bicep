@@ -9,13 +9,10 @@ param blobContainerName string = 'albums'
 param registryName string
 @secure()
 param registryPassword string
+
 param registryUsername string
 param apiImage string
 param viewerImage string
-param stateStoreScopes array = [
-  'album-api'
-]
-
 
 
 // Log analytics and App Insights for visibility 
@@ -89,7 +86,6 @@ module daprStateStore 'modules/dapr-statestore.bicep' = {
     containerAppsEnvName : containerAppsEnvName
     storage_account_name: storageAccountName
     storage_container_name: blobContainerName
-    stateStoreScopes: stateStoreScopes
 }
 }
 
@@ -97,6 +93,7 @@ module albumViewerCapp 'modules/container-app.bicep' = {
   name: '${deployment().name}--album-viewer'
   dependsOn: [
     containerAppsEnv
+    albumServiceCapp
   ]
   params: {
     location: location
@@ -104,7 +101,7 @@ module albumViewerCapp 'modules/container-app.bicep' = {
     appName: 'album-viewer'
     registryPassword: registryPassword
     registryUsername: registryUsername
-    containerImage: apiImage
+    containerImage: viewerImage
     httpPort: 3000
     registryServer: registryName
   }
@@ -114,7 +111,6 @@ module albumServiceCapp 'modules/container-app.bicep' = {
   name: '${deployment().name}--album-api'
   dependsOn: [
     containerAppsEnv
-    albumViewerCapp
   ]
   params: {
     location: location
@@ -122,7 +118,7 @@ module albumServiceCapp 'modules/container-app.bicep' = {
     appName: 'album-api'
     registryPassword: registryPassword
     registryUsername: registryUsername
-    containerImage: viewerImage
+    containerImage: apiImage
     httpPort: 80
     registryServer: registryName
   }
