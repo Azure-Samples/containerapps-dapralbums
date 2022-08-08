@@ -3,18 +3,20 @@ param appName string
 param location string 
 @secure()
 param registryPassword string
+param registryUsername string
+param registryServer string
+param httpPort int
+param containerImage string 
 
 resource caEnvironment 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
   name: containerAppsEnvName
 }
 
-// https://github.com/Azure/azure-rest-api-specs/blob/Microsoft.App-2022-01-01-preview/specification/app/resource-manager/Microsoft.App/preview/2022-01-01-preview/ContainerApps.json
-resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' ={
+resource containerApp 'Microsoft.App/containerApps@2022-03-01' ={
   name: appName
   location: location
   properties:{
     managedEnvironmentId: caEnvironment.id
-
     configuration: {
       secrets: [
         {
@@ -24,26 +26,26 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' ={
       ]
       registries: [
         {
-          server: 'dapralbumappacr.azurecr.io'
-          username: 'dapralbumappacr'
+          server: registryServer
+          username: registryUsername
           passwordSecretRef: 'registrypassword'
         }
       ]
       ingress: {
-        targetPort: 3000
+        targetPort: httpPort
         external: true
       }
       dapr: {
         enabled: true
         appId: appName
         appProtocol: 'http'
-        appPort: 3000
+        appPort: httpPort
       }
     }
     template: {
       containers: [
         {
-          image: ''
+          image: containerImage
           name: appName
         }
       ]

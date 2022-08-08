@@ -6,6 +6,13 @@ param logAnalyticsWorkspaceName string = 'log-${uniqueSuffix}'
 param appInsightsName string = 'appinsights-${uniqueSuffix}'
 param storageAccountName string = 'storage${replace(uniqueSuffix, '-', '')}'
 param blobContainerName string = 'albums'
+param registryName string
+@secure()
+param registryPassword string
+param registryUsername string
+param apiImage string
+param viewerImage string
+
 
 
 // Log analytics and App Insights for visibility 
@@ -54,7 +61,7 @@ resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/container
 }
 
 // Container Apps environment 
-resource environment 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
+resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-03-01' = {
   name: containerAppsEnvName
   location: location
   properties: {
@@ -69,8 +76,43 @@ resource environment 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
   }
 }
 
+module albumViewerCapp 'modules/container-app.bicep' = {
+  name: '${deployment().name}--album-viewer'
+  dependsOn: [
+    containerAppsEnv
+  ]
+  params: {
+    location: location
+    containerAppsEnvName: containerAppsEnvName
+    appName: 'album-viewer'
+    registryPassword: registryPassword
+    registryUsername: registryUsername
+    containerImage: apiImage
+    httpPort: 3000
+    registryServer: registryName
+  }
+}
+
+module albumServiceCapp 'modules/container-app.bicep' = {
+  name: '${deployment().name}--album-api'
+  dependsOn: [
+    containerAppsEnv
+    albumViewerCapp
+  ]
+  params: {
+    location: location
+    containerAppsEnvName: containerAppsEnvName
+    appName: 'album-api'
+    registryPassword: registryPassword
+    registryUsername: registryUsername
+    containerImage: viewerImage
+    httpPort: 80
+    registryServer: registryName
+  }
+}
+
 output env array=[
-  'Environment name: ${environment.name}'
+  'Environment name: ${containerAppsEnv.name}'
   'Storage account name: ${storageAccount.name}'
   'Storage container name: ${blobContainer.name}'
 ]

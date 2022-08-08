@@ -2,11 +2,11 @@ param storage_account_name string
 param storage_container_name string
 param containerAppsEnvName string
 
-resource caEnvironment  'Microsoft.App/managedEnvironments@2022-03-01' existing = {
+resource caEnvironment  'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
   name: containerAppsEnvName
 }
 
-resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-03-01' = {
+resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-01-01-preview' = {
   parent: caEnvironment
   name: 'statestore'
   properties: {
