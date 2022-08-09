@@ -4,6 +4,10 @@ on:
     branches: [main]
     # Publish semver tags as releases.
     tags: ["v*.*.*"]
+    paths-ignore:
+      - "README.md"
+      - ".vscode/**"
+      - "assets/**"
   workflow_dispatch:
 
 env:
