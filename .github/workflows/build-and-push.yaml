@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-
+  IMAGE_NAME: ${{ github.repository }}
 jobs:
   set-env:
     name: Set Environment Variables
@@ -78,7 +78,6 @@ jobs:
         id: image-tag
         run: |
           echo ::set-output name=image-${{ matrix.services.appName }}::${{ env.REGISTRY }}/$GITHUB_REPOSITORY/${{ matrix.services.appName }}:sha-${{ needs.set-env.outputs.version }} | tr '[:upper:]' '[:lower:]'
-
   deploy:
     if: github.repository != 'Azure-samples/containerapps-dapralbums'
     runs-on: ubuntu-latest
