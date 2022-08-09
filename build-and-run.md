@@ -45,16 +45,18 @@ The Dapr CLI will launch our application and dapr alongside one another. In the 
 
 For local debugging and development, the component used by the album api to manage state is a containerized redis instance running on Docker. Once deployed to Azure, this component is swapped for an Azure Storage account and because of the pluggability Dapr provides, no code changes are required in order to make this change.
 
-Now, it's time to run the `album-api` in a new terminal window:
+Now, it's time to run the `album-api` in a new terminal window- ensure you are sitting in the directory which holds the app code.
 
 ```bash
-dapr run --app-id album-api --app-port 80 --dapr-http-port 3500 --components-path ./dapr-components -- dotnet run
+cd album-api
+dapr run --app-id album-api --app-port 80 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
 ```
 
 Once the api is up and running, launch a new terminal to run the frontend application.
 
 ```bash
-dapr run --app-id album-viewer --app-port 3000 --dapr-http-port 3501 --components-path ./dapr-components -- npm run start
+cd album-viewer
+dapr run --app-id album-viewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start
 ```
 
 Validate the applications are up and running by navigating to localhost:3000!
