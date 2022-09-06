@@ -9,11 +9,64 @@ param blobContainerName string = 'albums'
 param registryName string
 @secure()
 param registryPassword string
+param testLocation string = 'northcentralusstage'
 
 param registryUsername string
 param apiImage string
 param viewerImage string
 
+@description('The name of the key vault to be created.')
+param vaultName string
+@description('Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet.')
+param tenantId string = subscription().tenantId
+@description('Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADServicePrincipal cmdlets.')
+param objectId string
+@description('Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge.')
+param secretsPermissions array = [
+  'get'
+  'list'
+]
+@description('Specifies whether the key vault is a standard vault or a premium vault.')
+@allowed([
+  'standard'
+  'premium'
+])
+param skuName string = 'standard'
+
+resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
+  name: vaultName
+  location: location
+  properties: {
+    tenantId:  tenantId
+    accessPolicies: [
+      {
+        objectId: albumViewerCapp.outputs.containerAppIdentity
+        tenantId: tenantId
+        permissions: {
+          secrets: secretsPermissions
+        }
+      }
+    ]
+    sku: {
+      name: skuName
+      family: 'A'
+    }
+  }
+  dependsOn: [
+    albumViewerCapp
+  ]
+}
+
+resource secret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'storageaccountkey'
+  properties: {
+    value: listKeys(resourceId('Microsoft.Storage/storageAccounts/', storageAccountName), '2021-09-01').keys[0].value
+  }
+  dependsOn: [
+    storageAccount
+  ]
+}
 
 // Log analytics and App Insights for visibility 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
@@ -40,6 +93,22 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+// Container Apps environment 
+resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview' = {
+  name: containerAppsEnvName
+  location: testLocation
+  properties: {
+    daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.properties.customerId
+        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
+      }
+    }
+  }
+}
+
 // Storage Account to act as state store 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: storageAccountName
@@ -60,22 +129,6 @@ resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/container
   name: blobContainerName
 }
 
-// Container Apps environment 
-resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-03-01' = {
-  name: containerAppsEnvName
-  location: location
-  properties: {
-    daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalyticsWorkspace.properties.customerId
-        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
-      }
-    }
-  }
-}
-
 module daprStateStore 'modules/dapr-statestore.bicep' = {
   name: '${deployment().name}--dapr-statestore'
   dependsOn:[
@@ -86,6 +139,19 @@ module daprStateStore 'modules/dapr-statestore.bicep' = {
     containerAppsEnvName : containerAppsEnvName
     storage_account_name: storageAccountName
     storage_container_name: blobContainerName
+    secretStoreComponent: 'secretstore'
+}
+}
+
+module daprSecretStore 'modules/dapr-secretstore.bicep' = {
+  name: '${deployment().name}--dapr-secretstore'
+  dependsOn:[
+    storageAccount
+    containerAppsEnv
+  ]
+  params: {
+    containerAppsEnvName : containerAppsEnvName
+    vaultName: vaultName
 }
 }
 
@@ -96,7 +162,7 @@ module albumViewerCapp 'modules/container-app.bicep' = {
     albumServiceCapp
   ]
   params: {
-    location: location
+    location: testLocation
     containerAppsEnvName: containerAppsEnvName
     appName: 'album-viewer'
     registryPassword: registryPassword
@@ -113,7 +179,7 @@ module albumServiceCapp 'modules/container-app.bicep' = {
     containerAppsEnv
   ]
   params: {
-    location: location
+    location: testLocation
     containerAppsEnvName: containerAppsEnvName
     appName: 'album-api'
     registryPassword: registryPassword

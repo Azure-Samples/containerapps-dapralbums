@@ -8,13 +8,16 @@ param registryServer string
 param httpPort int
 param containerImage string 
 
-resource caEnvironment 'Microsoft.App/managedEnvironments@2022-01-01-preview' existing = {
+resource caEnvironment 'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
   name: containerAppsEnvName
 }
 
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' ={
+resource containerApp 'Microsoft.App/containerApps@2022-06-01-preview' ={
   name: appName
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties:{
     managedEnvironmentId: caEnvironment.id
     configuration: {
@@ -52,3 +55,5 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' ={
     }
   }
 }
+
+output containerAppIdentity string = containerApp.identity.principalId
