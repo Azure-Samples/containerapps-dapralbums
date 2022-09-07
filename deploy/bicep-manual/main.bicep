@@ -7,6 +7,7 @@ param appInsightsName string = 'appinsights-${uniqueSuffix}'
 param storageAccountName string = 'storage${replace(uniqueSuffix, '-', '')}'
 param blobContainerName string = 'albums'
 param registryName string
+param objectId string 
 param clientId string 
 param clientSecret string
 @secure()
@@ -40,7 +41,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     tenantId:  tenantId
     accessPolicies: [
       {
-        objectId: clientId
+        objectId: objectId
         tenantId: tenantId
         permissions: {
           secrets: secretsPermissions
