@@ -38,7 +38,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     tenantId:  tenantId
     accessPolicies: [
       {
-        objectId: albumViewerCapp.outputs.containerAppIdentity
+        objectId: albumServiceCapp.outputs.containerAppIdentity
         tenantId: tenantId
         permissions: {
           secrets: secretsPermissions
@@ -153,6 +153,7 @@ module daprSecretStore 'modules/dapr-secretstore.bicep' = {
   params: {
     containerAppsEnvName : containerAppsEnvName
     vaultName: vaultName
+    tenantId: tenantId
 }
 }
 
