@@ -118,4 +118,5 @@ jobs:
             registryUsername=${{ github.actor }} \
             registryPassword=${{ secrets.GH_PAT }} \
             clientId=${{ secrets.CLIENT_ID }} \
+            objectId=${{ secrets.SP_OBJ_ID }} \
             clientSecret=${{ secrets.CLIENT_SECRET }}
