@@ -30,10 +30,8 @@ jobs:
 
   package-services:
     runs-on: ubuntu-latest
+    permissions: write-all
     needs: set-env
-    permissions:
-      contents: read
-      packages: write
     outputs:
       api-image: ${{ steps.image-tag.outputs.image-album-api }}
       ui-image: ${{ steps.image-tag.outputs.image-album-viewer }}
