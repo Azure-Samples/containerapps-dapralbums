@@ -105,4 +105,6 @@ jobs:
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \
             registryName=${{ env.REGISTRY }} \
             registryUsername=${{ github.actor }} \
-            registryPassword=${{ secrets.GITHUB_TOKEN }}
+            registryPassword=${{ secrets.GITHUB_TOKEN }} \
+            clientId = ${{ secrets.CLIENT_ID }} \
+            clientSecret = ${{ secrets.CLIENT_SECRET }}
