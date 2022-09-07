@@ -106,5 +106,5 @@ jobs:
             registryName=${{ env.REGISTRY }} \
             registryUsername=${{ github.actor }} \
             registryPassword=${{ secrets.GITHUB_TOKEN }} \
-            clientId = ${{ secrets.CLIENT_ID }} \
-            clientSecret = ${{ secrets.CLIENT_SECRET }}
+            clientId=${{ secrets.CLIENT_ID }} \
+            clientSecret=${{ secrets.CLIENT_SECRET }}
