@@ -62,7 +62,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN}}
+          password: ${{ secrets.GH_PAT }}
           
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
@@ -116,6 +116,6 @@ jobs:
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \
             registryName=${{ env.REGISTRY }} \
             registryUsername=${{ github.actor }} \
-            registryPassword=${{ secrets.GITHUB_TOKEN }} \
+            registryPassword=${{ secrets.GH_PAT }} \
             clientId=${{ secrets.CLIENT_ID }} \
             clientSecret=${{ secrets.CLIENT_SECRET }}
