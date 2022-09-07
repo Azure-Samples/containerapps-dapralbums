@@ -9,7 +9,9 @@ on:
       - ".vscode/**"
       - "assets/**"
   workflow_dispatch:
-
+permissions:
+  contents: write
+  packages: write 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -30,9 +32,6 @@ jobs:
 
   package-services:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write 
     needs: set-env
     outputs:
       api-image: ${{ steps.image-tag.outputs.image-album-api }}
