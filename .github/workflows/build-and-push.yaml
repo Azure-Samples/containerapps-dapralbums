@@ -100,7 +100,7 @@ jobs:
         with:
           inlineScript: |
             az group create -g ${{ secrets.RESOURCE_GROUP }} -l eastus
-            az deployment group create -g ${{ secrets.RESOURCE_GROUP }} -f ./deploy/bicep-external/main.bicep --parameters \
+            az deployment group create -g ${{ secrets.RESOURCE_GROUP }} -f ./deploy/bicep-manual/main.bicep --parameters \
             apiImage='${{ needs.package-services.outputs.api-image }}' \
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \
             registryName=${{ env.REGISTRY }} \
