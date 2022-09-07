@@ -20,7 +20,7 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
     initTimeout: '5s'
     secrets: [
       {
-        name: 'azureClientSecret'
+        name: 'azureclientsecret'
         value: clientSecret
       }
     ]
