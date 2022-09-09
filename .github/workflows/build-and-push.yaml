@@ -110,7 +110,7 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az group create -g ${{ secrets.RESOURCE_GROUP }} -l eastus
+            az group create -g ${{ secrets.RESOURCE_GROUP }} -l eastus2
             az deployment group create -g ${{ secrets.RESOURCE_GROUP }} -f ./deploy/bicep-MI/main.bicep --parameters \
             apiImage='${{ needs.package-services.outputs.api-image }}' \
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \

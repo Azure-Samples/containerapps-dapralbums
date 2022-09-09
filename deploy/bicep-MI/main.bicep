@@ -9,7 +9,6 @@ param blobContainerName string = 'albums'
 param registryName string
 @secure()
 param registryPassword string
-param testLocation string = 'northcentralusstage'
 
 param registryUsername string
 param apiImage string
@@ -94,7 +93,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 // Container Apps environment 
 resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview' = {
   name: containerAppsEnvName
-  location: testLocation
+  location: location
   sku: {
     name: 'Consumption'
   }
@@ -164,7 +163,7 @@ module albumViewerCapp 'modules/container-app.bicep' = {
     albumServiceCapp
   ]
   params: {
-    location: testLocation
+    location: location
     containerAppsEnvName: containerAppsEnvName
     appName: 'album-viewer'
     registryPassword: registryPassword
@@ -181,7 +180,7 @@ module albumServiceCapp 'modules/container-app.bicep' = {
     containerAppsEnv
   ]
   params: {
-    location: testLocation
+    location: location
     containerAppsEnvName: containerAppsEnvName
     appName: 'album-api'
     registryPassword: registryPassword
