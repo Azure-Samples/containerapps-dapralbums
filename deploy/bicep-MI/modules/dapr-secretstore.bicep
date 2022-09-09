@@ -9,7 +9,7 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
   parent: caEnvironment
   name: 'secretstore'
   properties: {
-    componentType: 'secrets.azure.keyvault'
+    componentType: 'secretstores.azure.keyvault'
     version: 'v1'
     ignoreErrors: false
     initTimeout: '5s'
