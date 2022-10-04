@@ -6,6 +6,7 @@ param registryPassword string
 param registryUsername string
 param registryServer string
 param httpPort int
+param albumIdentity string 
 param containerImage string 
 
 resource caEnvironment 'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
@@ -16,7 +17,10 @@ resource containerApp 'Microsoft.App/containerApps@2022-06-01-preview' ={
   name: appName
   location: location
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${albumIdentity}' : {}
+    }    
   }
   properties:{
     managedEnvironmentId: caEnvironment.id
@@ -55,5 +59,3 @@ resource containerApp 'Microsoft.App/containerApps@2022-06-01-preview' ={
     }
   }
 }
-
-output containerAppIdentity string = containerApp.identity.principalId

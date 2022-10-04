@@ -6,16 +6,10 @@ param logAnalyticsWorkspaceName string = 'log-${uniqueSuffix}'
 param appInsightsName string = 'appinsights-${uniqueSuffix}'
 param storageAccountName string = 'storage${replace(uniqueSuffix, '-', '')}'
 param blobContainerName string = 'albums'
-param registryName string
-@secure()
-param registryPassword string
-
-param registryUsername string
+param managedIdentityName string = 'dapr-albums-mi'
 param apiImage string
 param viewerImage string
 
-@description('The name of the key vault to be created.')
-param vaultName string = 'kv-${uniqueSuffix}'
 @description('Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet.')
 param tenantId string = subscription().tenantId
 @description('Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge.')
@@ -23,12 +17,21 @@ param secretsPermissions array = [
   'get'
   'list'
 ]
-@description('Specifies whether the key vault is a standard vault or a premium vault.')
-@allowed([
-  'standard'
-  'premium'
-])
-param skuName string = 'standard'
+
+@secure()
+param registryPassword string
+param registryServer string
+param registryUsername string
+
+
+@description('The name of the key vault to be created.')
+param vaultName string = 'kv-${uniqueSuffix}'
+
+
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+  name: managedIdentityName
+  location: location
+}
 
 resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   name: vaultName
@@ -37,7 +40,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     tenantId:  tenantId
     accessPolicies: [
       {
-        objectId: albumServiceCapp.outputs.containerAppIdentity
+        objectId: managedIdentity.properties.principalId
         tenantId: tenantId
         permissions: {
           secrets: secretsPermissions
@@ -45,13 +48,10 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
       }
     ]
     sku: {
-      name: skuName
+      name: 'premium'
       family: 'A'
     }
   }
-  dependsOn: [
-    albumViewerCapp
-  ]
 }
 
 resource secret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
@@ -169,7 +169,8 @@ module albumViewerCapp 'modules/container-app.bicep' = {
     registryUsername: registryUsername
     containerImage: viewerImage
     httpPort: 3000
-    registryServer: registryName
+    registryServer: registryServer
+    albumIdentity: managedIdentity.id
   }
 }
 
@@ -186,7 +187,8 @@ module albumServiceCapp 'modules/container-app.bicep' = {
     registryUsername: registryUsername
     containerImage: apiImage
     httpPort: 80
-    registryServer: registryName
+    registryServer: registryServer
+    albumIdentity: managedIdentity.id
   }
 }
 
