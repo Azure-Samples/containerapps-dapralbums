@@ -114,6 +114,6 @@ jobs:
             az deployment group create -g ${{ secrets.RESOURCE_GROUP }} -f ./deploy/bicep-MI/main.bicep --parameters \
             apiImage='${{ needs.package-services.outputs.api-image }}' \
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \
-            registryName=${{ env.REGISTRY }} \
+            registryServer=${{ env.REGISTRY }} \
             registryUsername=${{ github.actor }} \
             registryPassword=${{ secrets.GH_PAT }}
