@@ -12,11 +12,6 @@ param viewerImage string
 
 @description('Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet.')
 param tenantId string = subscription().tenantId
-@description('Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge.')
-param secretsPermissions array = [
-  'get'
-  'list'
-]
 
 @secure()
 param registryPassword string
@@ -38,19 +33,26 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   location: location
   properties: {
     tenantId:  tenantId
-    accessPolicies: [
-      {
-        objectId: managedIdentity.properties.principalId
-        tenantId: tenantId
-        permissions: {
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    enableRbacAuthorization: true
     sku: {
       name: 'premium'
       family: 'A'
     }
+  }
+}
+
+@description('This is the built-in role for Key Vault Secrets Officer. See https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide?source=recommendations&tabs=azure-cli#azure-built-in-roles-for-key-vault-data-plane-operations')
+resource secretsOfficerRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  scope: kv
+  name: 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+}
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(resourceGroup().id, secretsOfficerRole.id)
+  properties: {
+    roleDefinitionId: secretsOfficerRole.id
+    principalId: managedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
