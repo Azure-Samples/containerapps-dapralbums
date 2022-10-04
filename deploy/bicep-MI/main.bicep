@@ -152,6 +152,7 @@ module daprSecretStore 'modules/dapr-secretstore.bicep' = {
   params: {
     containerAppsEnvName : containerAppsEnvName
     vaultName: vaultName
+    identityClientId: managedIdentity.properties.clientId
 }
 }
 
