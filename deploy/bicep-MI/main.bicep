@@ -22,6 +22,8 @@ param registryUsername string
 @description('The name of the key vault to be created.')
 param vaultName string = 'kv-${uniqueSuffix}'
 
+@description('Role Id for built-in Key Vault Secrets Officer Role. See https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide?source=recommendations&tabs=azure-cli#azure-built-in-roles-for-key-vault-data-plane-operations')
+var keyVaultSecretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
   name: managedIdentityName
@@ -41,16 +43,11 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   }
 }
 
-@description('This is the built-in role for Key Vault Secrets Officer. See https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide?source=recommendations&tabs=azure-cli#azure-built-in-roles-for-key-vault-data-plane-operations')
-resource secretsOfficerRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-  scope: kv
-  name: 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
-}
-
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroup().id, secretsOfficerRole.id)
+  name: guid(keyVaultSecretsOfficerRoleId,kv.id)
+  scope: kv
   properties: {
-    roleDefinitionId: secretsOfficerRole.id
+    roleDefinitionId: keyVaultSecretsOfficerRoleId
     principalId: managedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
