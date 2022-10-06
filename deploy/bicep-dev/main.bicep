@@ -71,10 +71,11 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
     name: 'Consumption'
   }
   properties: {
+    useKubenet: false
     daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
     vnetConfiguration: {
       internal: true
-      infrastructureSubnetId: '/subscriptions/f69541c5-b3b2-40bc-8f8d-4f9f88d5660a/resourceGroups/dev-dapr-albums/providers/Microsoft.Network/virtualNetworks/vnet-da-3d3x3xjvx543w/subnets/ContainerAppsSubnet'
+      infrastructureSubnetId: '${vnetModule.outputs.vnetId}/subnets/${containerAppsSubnet.name}'
     }
     appLogsConfiguration: {
       destination: 'log-analytics'
