@@ -7,11 +7,36 @@ param appInsightsName string = 'appinsights-${uniqueSuffix}'
 param apiImage string
 param viewerImage string
 param localRedis string = 'dapr-albums-test-redis'
+param vnetName string = 'vnet-${uniqueSuffix}'
+param vnetPrefix string = '10.0.0.0/16'
 
 @secure()
 param registryPassword string
 param registryServer string
 param registryUsername string
+
+var containerAppsSubnet = {
+  name: 'ContainerAppsSubnet'
+  properties: {
+    addressPrefix: '10.0.0.0/23'
+  }
+}
+
+var subnets = [
+  containerAppsSubnet
+]
+
+
+// Deploy an Azure Virtual Network 
+module vnetModule 'modules/vnet.bicep' = {
+  name: '${deployment().name}--vnet'
+  params: {
+    location: location
+    vnetName: vnetName
+    vnetPrefix: vnetPrefix
+    subnets: subnets
+  }
+}
 
 // Log analytics and App Insights for visibility 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
@@ -51,6 +76,20 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
         sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
       }
     }
+  }
+  dependsOn:[
+    vnetModule
+  ]
+}
+
+// Configure Azure Private DNS settings for environment 
+module privateDNSModule 'modules/private-dns.bicep' = {
+  name: '${deployment().name}--private-dns'
+  params: {
+    location: 'global'
+    cappPrivateDnsZoneName: containerAppsEnv.properties.defaultDomain
+    staticIP: containerAppsEnv.properties.staticIp
+    vnetName: vnetName
   }
 }
 

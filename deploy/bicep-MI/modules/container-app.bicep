@@ -12,6 +12,7 @@ param usePrivateRegistry bool = false
 param daprEnabled bool = false
 
 
+
 resource caEnvironment 'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
   name: containerAppsEnvName
 }
