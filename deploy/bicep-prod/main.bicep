@@ -228,24 +228,6 @@ module albumServiceCapp 'modules/container-app.bicep' = {
   }
 }
 
-module redisTestCapp 'modules/container-app.bicep' = {
-  name: '${deployment().name}--album-api'
-  dependsOn: [
-    containerAppsEnv
-  ]
-  params: {
-    location: location
-    containerAppsEnvName: containerAppsEnvName
-    appName: 'redis-test-statestore'
-    registryPassword: registryPassword
-    registryUsername: registryUsername
-    containerImage: apiImage
-    targetPort: 6379
-    registryServer: registryServer
-    transport: 'tcp'
-  }
-}
-
 output env array=[
   'Environment name: ${containerAppsEnv.name}'
   'Storage account name: ${storageAccount.name}'
