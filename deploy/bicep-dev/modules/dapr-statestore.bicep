@@ -1,4 +1,5 @@
 param redisAppName string 
+param redisPort int
 param containerAppsEnvName string
 
 resource caEnvironment  'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
@@ -16,7 +17,7 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
     metadata: [
       {
         name: 'redisHost'
-        value: redisAppName
+        value: '${redisAppName}:${redisPort}'
       }
     ]
     scopes: ['album-api']

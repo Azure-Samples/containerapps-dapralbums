@@ -7,6 +7,7 @@ param appInsightsName string = 'appinsights-${uniqueSuffix}'
 param apiImage string
 param viewerImage string
 param localRedis string = 'dapr-albums-test-redis'
+param localRedisPort int = 6379
 param vnetName string = 'vnet-${uniqueSuffix}'
 param vnetPrefix string = '10.0.0.0/16'
 
@@ -109,6 +110,7 @@ module daprStateStore 'modules/dapr-statestore.bicep' = {
   params: {
     containerAppsEnvName : containerAppsEnvName
     redisAppName: localRedis
+    redisPort: localRedisPort
 }
 }
 
@@ -162,7 +164,7 @@ module redisTestCapp 'modules/container-app.bicep' = {
     containerAppsEnvName: containerAppsEnvName
     appName: localRedis
     containerImage: 'docker.io/redis:7.0'
-    targetPort: 6379
+    targetPort: localRedisPort
     registryServer: registryServer
     transport: 'tcp'
     usePrivateRegistry: false
