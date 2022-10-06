@@ -2,12 +2,15 @@ param containerAppsEnvName string
 param appName string 
 param location string 
 @secure()
-param registryPassword string
-param registryUsername string
-param registryServer string
-param httpPort int
-param albumIdentity string 
+param registryPassword string = ''
+param registryUsername string = ''
+param registryServer string = ''
+param targetPort int
 param containerImage string 
+param transport string 
+param usePrivateRegistry bool = false
+param daprEnabled bool = false
+
 
 resource caEnvironment 'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
   name: containerAppsEnvName
@@ -16,38 +19,33 @@ resource caEnvironment 'Microsoft.App/managedEnvironments@2022-06-01-preview' ex
 resource containerApp 'Microsoft.App/containerApps@2022-06-01-preview' ={
   name: appName
   location: location
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${albumIdentity}' : {}
-    }    
-  }
   properties:{
     managedEnvironmentId: caEnvironment.id
     configuration: {
-      secrets: [
+      secrets: usePrivateRegistry ? [
         {
           name: 'registrypassword'
           value: registryPassword
         }
-      ]
-      registries: [
+      ]: null 
+      registries: usePrivateRegistry ? [
         {
           server: registryServer
           username: registryUsername
           passwordSecretRef: 'registrypassword'
         }
-      ]
+      ]: null
       ingress: {
-        targetPort: httpPort
+        targetPort: targetPort
         external: true
+        transport: transport
       }
-      dapr: {
+      dapr: daprEnabled ? {
         enabled: true
         appId: appName
         appProtocol: 'http'
-        appPort: httpPort
-      }
+        appPort: targetPort
+      }: null
     }
     template: {
       containers: [

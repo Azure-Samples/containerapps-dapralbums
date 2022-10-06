@@ -1,7 +1,5 @@
-param storage_account_name string
-param storage_container_name string
+param redisAppName string 
 param containerAppsEnvName string
-param secretStoreComponent string 
 
 resource caEnvironment  'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
   name: containerAppsEnvName
@@ -11,25 +9,20 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
   parent: caEnvironment
   name: 'statestore'
   properties: {
-    componentType: 'state.azure.blobstorage'
+    componentType: 'state.redis'
     version: 'v1'
     ignoreErrors: false
     initTimeout: '5s'
     metadata: [
       {
-        name: 'accountName'
-        value: storage_account_name
+        name: 'redisHost'
+        value: redisAppName
       }
       {
-        name: 'containerName'
-        value: storage_container_name
-      }
-      {
-        name: 'accountKey'
-        secretRef: 'storageaccountkey'
+        name: 'redisPassword'
+        value: '' 
       }
     ]
-    secretStoreComponent: secretStoreComponent
     scopes: ['album-api']
   }
 }
