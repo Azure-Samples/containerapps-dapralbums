@@ -105,7 +105,7 @@ module albumServiceCapp 'modules/container-app.bicep' = {
 }
 
 module redisTestCapp 'modules/container-app.bicep' = {
-  name: '${deployment().name}--album-api'
+  name: '${deployment().name}--local-redis'
   dependsOn: [
     containerAppsEnv
   ]
