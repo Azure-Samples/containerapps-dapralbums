@@ -71,7 +71,6 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
     name: 'Consumption'
   }
   properties: {
-    useKubenet: false
     daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
     vnetConfiguration: {
       internal: true

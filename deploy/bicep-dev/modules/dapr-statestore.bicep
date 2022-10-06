@@ -18,10 +18,6 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
         name: 'redisHost'
         value: redisAppName
       }
-      {
-        name: 'redisPassword'
-        value: '' 
-      }
     ]
     scopes: ['album-api']
   }
