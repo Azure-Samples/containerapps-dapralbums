@@ -74,7 +74,7 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
   properties: {
     daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
     vnetConfiguration: {
-      internal: true
+      internal: false
       infrastructureSubnetId: '${vnetModule.outputs.vnetId}/subnets/${containerAppsSubnet.name}'
     }
     appLogsConfiguration: {
@@ -88,17 +88,6 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
   dependsOn:[
     vnetModule
   ]
-}
-
-// Configure Azure Private DNS settings for environment 
-module privateDNSModule 'modules/private-dns.bicep' = {
-  name: '${deployment().name}--private-dns'
-  params: {
-    location: 'global'
-    cappPrivateDnsZoneName: containerAppsEnv.properties.defaultDomain
-    staticIP: containerAppsEnv.properties.staticIp
-    vnetName: vnetName
-  }
 }
 
 module daprStateStore 'modules/dapr-statestore.bicep' = {

@@ -111,8 +111,8 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az group create -g ${{ secrets.RESOURCE_GROUP }} -l eastus
-            az deployment group create -g ${{ secrets.RESOURCE_GROUP }} -f ./deploy/bicep-dev/main.bicep --parameters \
+            az group create -g ${{ secrets.RG_DEV }} -l eastus
+            az deployment group create -g ${{ secrets.RG_DEV }} -f ./deploy/bicep-dev/main.bicep --parameters \
             apiImage='${{ needs.package-services.outputs.api-image }}' \
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \
             registryServer=${{ env.REGISTRY }} \

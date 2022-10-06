@@ -123,7 +123,7 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
   properties: {
     daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
     vnetConfiguration: {
-      internal: true
+      internal: false
       infrastructureSubnetId: '${vnetModule.outputs.vnetId}/subnets/${containerAppsSubnet.name}'
     }
     appLogsConfiguration: {

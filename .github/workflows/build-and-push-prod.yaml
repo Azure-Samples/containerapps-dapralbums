@@ -111,8 +111,8 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az group create -g dapr-albums-prod -l eastus
-            az deployment group create -g dapr-albums-prod -f ./deploy/bicep-prod/main.bicep --parameters \
+            az group create -g $RG_PROD -l eastus
+            az deployment group create -g $RG_PROD -f ./deploy/bicep-prod/main.bicep --parameters \
             apiImage='${{ needs.package-services.outputs.api-image }}' \
             viewerImage='${{ needs.package-services.outputs.ui-image }}' \
             registryServer=${{ env.REGISTRY }} \
