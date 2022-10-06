@@ -22,9 +22,6 @@ param registryUsername string
 @description('The name of the key vault to be created.')
 param vaultName string = 'kv-${uniqueSuffix}'
 
-@description('Role Id for built-in Key Vault Secrets Officer Role. See https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide?source=recommendations&tabs=azure-cli#azure-built-in-roles-for-key-vault-data-plane-operations')
-var keyVaultSecretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
-
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
   name: managedIdentityName
   location: location
@@ -35,21 +32,22 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   location: location
   properties: {
     tenantId:  tenantId
-    enableRbacAuthorization: true
+    accessPolicies: [
+      {
+        objectId: managedIdentity.properties.principalId
+        tenantId: tenantId
+        permissions: {
+          secrets: [
+            'get'
+            'list'
+          ]
+        }
+      }
+    ]
     sku: {
       name: 'premium'
       family: 'A'
     }
-  }
-}
-
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(keyVaultSecretsOfficerRoleId,kv.id)
-  scope: kv
-  properties: {
-    roleDefinitionId: keyVaultSecretsOfficerRoleId
-    principalId: managedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
   }
 }
 
