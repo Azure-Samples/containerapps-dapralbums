@@ -8,7 +8,7 @@ on:
       - "README.md"
       - ".vscode/**"
       - "assets/**"
-      - "deploy/bicep-dev"
+      - "deploy/bicep-dev/**"
   workflow_dispatch:
 
 env:
