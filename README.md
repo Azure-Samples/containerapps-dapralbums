@@ -28,7 +28,7 @@ The entire solution is configured with [GitHub Actions](https://github.com/featu
    | RESOURCE_GROUP | The name of the resource group to create |
    | GH_PAT | [Generate a GitHub personal access token with `write:packages` permission](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) and store as a pipeline secret. This PAT will be used to push images to your private GitHub Package Registry.  |
 
-3. Open the Actions tab, select the **Build and Deploy** action and choose to run the workflow. The workflow will build the necessary container images, push them to your private Github Container Registry and deploy the necessary Azure services along with two Container Apps for the respective services.
+3. Open the Actions tab, select the **Build and Deploy** action and choose to run the workflow. The workflow will build the necessary container images, push them to your private Github Package Registry and deploy the necessary Azure services along with two Container Apps for the respective services.
 
 4. Once the GitHub Actions have completed successfully, navigate to the [Azure Portal](https://portal.azure.com) and select the resource group you created. Open the `album-viewer` container app and browse to the FQDN displayed on the overview blade. You should see the sample application up and running.
 
