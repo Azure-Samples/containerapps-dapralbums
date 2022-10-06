@@ -128,6 +128,7 @@ module albumViewerCapp 'modules/container-app.bicep' = {
     targetPort: 3000
     registryServer: registryServer
     transport: 'http'
+    daprEnabled: true
   }
 }
 
@@ -147,6 +148,7 @@ module albumServiceCapp 'modules/container-app.bicep' = {
     targetPort: 80
     registryServer: registryServer
     transport: 'http'
+    daprEnabled: true
   }
 }
 
@@ -164,7 +166,6 @@ module redisTestCapp 'modules/container-app.bicep' = {
     registryServer: registryServer
     transport: 'tcp'
     usePrivateRegistry: false
-    daprEnabled: false
   }
 }
 
