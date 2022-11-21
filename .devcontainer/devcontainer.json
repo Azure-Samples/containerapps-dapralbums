@@ -1,5 +1,5 @@
 {
-  "name": "Dapr Quickstarts Codespace",
+  "name": "Azure Developer CLI",
   "build": {
       "dockerfile": "Dockerfile",
       "args": {
@@ -13,49 +13,32 @@
       "ghcr.io/devcontainers/features/docker-from-docker:1": {
           "version": "20.10"
       },
+      "ghcr.io/devcontainers/features/dotnet:1": {
+          "version": "6.0"
+      },
       "ghcr.io/devcontainers/features/github-cli:1": {
           "version": "2"
       },
       "ghcr.io/devcontainers/features/node:1": {
           "version": "16",
           "nodeGypDependencies": false
-      },
-      "ghcr.io/devcontainers/features/python:1": {
-          "version": "os-provided"
       }
   },
   "extensions": [
-      "golang.go",
       "ms-azuretools.azure-dev",
       "ms-azuretools.vscode-bicep",
-      "ms-azuretools.vscode-dapr",
       "ms-azuretools.vscode-docker",
-      "ms-kubernetes-tools.vscode-kubernetes-tools",
       "ms-vscode.vscode-node-azure-pack",
-      "ms-vscode.js-debug",
-      "esbenp.prettier-vscode",
-      "eg2.vscode-npm-script",
-      "dbaeumer.vscode-eslint"
+      "ms-dotnettools.csharp",
+      "ms-dotnettools.vscode-dotnet-runtime"
   ],
   "forwardPorts": [
       3000,
       3100
   ],
-  "mounts": [
-    // Mount docker-in-docker library volume
-    "source=codespaces-linux-var-lib-docker,target=/var/lib/docker,type=volume"
-  ],
-  // Always run image-defined docker-init.sh to enable docker-in-docker
-  "overrideCommand": false,
-  "remoteUser": "codespace",
-  "runArgs": [
-    // Enable ptrace-based debugging for Go in container
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
-
-    // Enable docker-in-docker configuration
-    "--init",
-    "--privileged"
-  ]
+  "postCreateCommand": "",
+  "remoteUser": "vscode",
+  "hostRequirements": {
+      "memory": "8gb"
+  }
 }
