@@ -29,8 +29,5 @@ RUN MINIKUBE_URL="https://storage.googleapis.com/minikube/releases/latest/miniku
 # Install Dapr CLI
 RUN wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash
 
-# Install mechanical-markdown for quickstart validations
-RUN pip install mechanical-markdown
-
 # Install Azure Dev CLI
 RUN curl -fsSL https://aka.ms/install-azd.sh | bash
