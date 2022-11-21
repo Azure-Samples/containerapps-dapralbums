@@ -11,7 +11,8 @@
 # limitations under the License.
 #
 
-FROM mcr.microsoft.com/vscode/devcontainers/universal:latest
+ARG VARIANT=bullseye
+FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
 
 # Copy custom first notice message.
 COPY first-run-notice.txt /tmp/staging/
