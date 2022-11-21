@@ -4,17 +4,14 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder();
 
-var DefaultHttpPort = Environment.GetEnvironmentVariable("DAPR_HTTP_PORT") ?? "3500";
-var AlbumStateStore = "statestore";
-var CollectionId = Environment.GetEnvironmentVariable("COLLECTION_ID") ?? "GreatestHits";
-
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<AlbumApiConfiguration>();
 
-builder.Services.AddCors(options => {
+builder.Services.AddCors(options =>
+{
     options.AddDefaultPolicy(builder =>
     {
         builder.AllowAnyOrigin();
@@ -24,7 +21,6 @@ builder.Services.AddCors(options => {
 });
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -42,62 +38,26 @@ app.MapGet("/", async context =>
     await context.Response.WriteAsync("Hit the /albums endpoint to retrieve a list of albums!");
 });
 
-app.MapGet("/albums", async (HttpContext context, HttpClient client) => 
+app.MapGet("/albums", async (HttpContext context, HttpClient client, AlbumApiConfiguration config) =>
 {
     // Get the albums from the state store.
-    var response = await client.GetAsync($"http://127.0.0.1:{DefaultHttpPort}/v1.0/state/{AlbumStateStore}/{CollectionId}");
-    var json = await response.Content.ReadAsStringAsync(); 
-    
-    if (!response.IsSuccessStatusCode)
-    {
-        throw new Exception($"Exception loading state. StatusCode: {response.StatusCode}. Message: {json}");
-    }
-    // Collection Id does not exist, therefore the database needs to be seeded 
-    else if (response.StatusCode == HttpStatusCode.NoContent)
-    {
-        // Seed the state store 
-        app.Logger.LogInformation("There is no state to retrieve. Seeding the state store with albums."); 
-        
-        var albumState = new []{
-            new 
-            {
-                key = CollectionId,
-                value = Album.GetAll() 
-            }
-        }; 
-        
-        var content = new StringContent(JsonSerializer.Serialize(albumState), Encoding.UTF8, "application/json");
+    var response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
+    var albums = await response.ReadAlbumArrayFromResponse(client, config);
 
-        // override the initial response with the resulting data.
-        response = await client.PostAsync($"http://127.0.0.1:{DefaultHttpPort}/v1.0/state/{AlbumStateStore}", content);
-        
-        if (response.IsSuccessStatusCode){
-            app.Logger.LogInformation("Successfully seeded the dapr state store.");
-        }
-        else{
-            throw new Exception($"Exception seeding state. StatusCode: {response.StatusCode}. Message: {json}");
-        }; 
+    if (albums != null && albums.Count > 0)
+        app.Logger.LogInformation($"{albums.Count} albums were retrieved from the state store");
 
-        // Get the newly seeded albums from the state store
-        response = await client.GetAsync($"http://127.0.0.1:{DefaultHttpPort}/v1.0/state/{AlbumStateStore}/{CollectionId}");
-    
-        json = await response.Content.ReadAsStringAsync();
-    }
-
-    var albums = JsonSerializer.Deserialize<Album[]>(json); 
-    
-    if(albums != null && albums.Length > 0)
-        app.Logger.LogInformation($"{albums.Length} albums were retrieved from the state store");
-    
     return Results.Ok(albums);
 }).WithName("GetAlbums");
 
 app.Run();
 
-record Album(int Id, string Title, string Artist, double Price, string Image_url)
+// the album model
+public record Album(int Id, string Title, string Artist, double Price, string Image_url)
 {
-     public static List<Album> GetAll(){
-         var albums = new List<Album>(){
+    public static List<Album> GetAll()
+    {
+        var albums = new List<Album>(){
             new Album(1, "You, Me and an App Id", "Daprize", 10.99, "https://aka.ms/albums-daprlogo"),
             new Album(2, "Seven Revision Army", "The Blue-Green Stripes", 13.99, "https://aka.ms/albums-containerappslogo"),
             new Album(3, "Scale It Up", "KEDA Club", 13.99, "https://aka.ms/albums-kedalogo"),
@@ -106,6 +66,69 @@ record Album(int Id, string Title, string Artist, double Price, string Image_url
             new Album(6, "Sweet Container O' Mine", "Guns N Probeses", 14.99, "https://aka.ms/albums-containerappslogo")
          };
 
-        return albums; 
-     }
+        return albums;
+    }
+}
+
+// app configuration settings
+public class AlbumApiConfiguration
+{
+    private IConfiguration _config;
+
+    public AlbumApiConfiguration(IConfiguration config)
+    {
+        _config = config;
+    }
+
+    public string CollectionId => _config.GetValue<string>("COLLECTION_ID") ?? "GreatestHits";
+    public string DefaultHttpPort => _config.GetValue<string>("DAPR_HTTP_PORT") ?? "3500";
+    public string DefaultHttpServer => _config.GetValue<string>("HTTP_SERVER") ?? "http://127.0.0.1";
+    public string AlbumStateStore => "statestore";
+}
+
+// extension methods for requesting,
+// deserializing, and returning the
+// array of albums
+public static class HttpResponseMessageAlbumExtensions
+{
+    public static async Task<List<Album>> ReadAlbumArrayFromResponse(this HttpResponseMessage response, HttpClient client, AlbumApiConfiguration config)
+    {
+        var json = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Exception loading state. StatusCode: {response.StatusCode}. Message: {json}");
+        }
+        // Collection Id does not exist, therefore the database needs to be seeded 
+        else if (response.StatusCode == HttpStatusCode.NoContent)
+        {
+            // Seed the state store 
+            var albumState = new[] {
+                new
+                {
+                    key = config.CollectionId,
+                    value = Album.GetAll()
+                }
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(albumState), Encoding.UTF8, "application/json");
+
+            // override the initial response with the resulting data.
+            response = await client.PostAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Exception seeding state. StatusCode: {response.StatusCode}. Message: {json}");
+            };
+
+            // Get the newly seeded albums from the state store
+            response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
+
+            json = await response.Content.ReadAsStringAsync();
+        }
+
+        var albums = JsonSerializer.Deserialize<List<Album>>(json);
+
+        return albums;
+    }
 }
