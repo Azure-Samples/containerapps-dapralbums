@@ -12,7 +12,7 @@
 #
 
 ARG VARIANT=bullseye
-FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
+FROM mcr.microsoft.com/vscode/devcontainers/dotnet:dev-7.0-bullseye
 
 # Install minikube
 RUN MINIKUBE_URL="https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64" \
@@ -21,39 +21,9 @@ RUN MINIKUBE_URL="https://storage.googleapis.com/minikube/releases/latest/miniku
     && MINIKUBE_SHA256=$(curl -sSL "${MINIKUBE_URL}.sha256") \
     && echo "${MINIKUBE_SHA256} */usr/local/bin/minikube" | sha256sum -c -
 
-ENV \
-    # Unset ASPNETCORE_URLS from aspnet base image
-    ASPNETCORE_URLS= \
-    # Do not generate certificate
-    DOTNET_GENERATE_ASPNET_CERTIFICATE=false \
-    # Do not show first run text
-    DOTNET_NOLOGO=true \
-    # SDK version
-    DOTNET_SDK_VERSION=7.0.100 \
-    # Enable correct mode for dotnet watch (only mode supported in a container)
-    DOTNET_USE_POLLING_FILE_WATCHER=true \
-    # Skip extraction of XML docs - generally not useful within an image/container - helps performance
-    NUGET_XMLDOC_MODE=skip \
 
 # Install Dapr CLI
 RUN wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash
 
 # Install Azure Dev CLI
-#RUN curl -fsSL https://aka.ms/install-azd.sh | bash
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        git \
-        wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install .NET 7 SDK
-RUN curl -fSL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz \
-    && dotnet_sha512='0a2e74486357a3ee16abb551ecd828836f90d8744d6e2b6b83556395c872090d9e5166f92a8d050331333d07d112c4b27e87100ba1af86cac8a37f1aee953078' \
-    && echo "$dotnet_sha512  dotnet.tar.gz" | sha512sum -c - \
-    && mkdir -p /usr/share/dotnet \
-    && tar -oxzf dotnet.tar.gz -C /usr/share/dotnet ./packs ./sdk ./sdk-manifests ./templates ./LICENSE.txt ./ThirdPartyNotices.txt \
-    && rm dotnet.tar.gz \
-    # Trigger first run experience by running arbitrary cmd
-    # && dotnet help
+RUN curl -fsSL https://aka.ms/install-azd.sh | bash
