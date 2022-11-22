@@ -1,5 +1,7 @@
+targetScope = 'subscription'
+
 @minLength(1)
-@maxLength(50)
+@maxLength(64)
 @description('Name of the the environment which is used to generate a short unique hash used in all resources.')
 param environmentName string
 
@@ -7,10 +9,41 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
+@description('Id of the user or app to assign application roles')
+param principalId string = ''
+
+var abbrs = loadJsonContent('./abbreviations.json')
+var tags = { 'azd-env-name': environmentName }
+
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: '${abbrs.resourcesResourceGroups}${environmentName}'
+  location: location
+  tags: tags
+}
+
+module resources 'resources.bicep' = {
+  name: 'resources'
+  scope: rg
+  params: {
+    environmentName: environmentName
+    location: location
+    principalId: principalId
+  }
+}
+
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME
+output AZURE_KEY_VAULT_ENDPOINT string = resources.outputs.AZURE_KEY_VAULT_ENDPOINT
+output AZURE_LOCATION string = location
+output AZURE_TENANT_ID string = tenant().tenantId
+output REACT_APP_APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+
+
 param containerAppsEnvName string = 'env-${environmentName}'
 param logAnalyticsWorkspaceName string = 'log-${environmentName}'
 param appInsightsName string = 'appinsights-${environmentName}'
-param storageAccountName string = 'storage${replace(environmentName, '-', '')}'
+param storageAccountName string = 'strg${replace(environmentName, '-', '')}'
 param vaultName string = 'kv-${environmentName}'
 param vnetName string = 'vnet-${environmentName}'
 param blobContainerName string = 'albums'
@@ -28,8 +61,6 @@ param registryServer string
 param registryUsername string
 param vnetPrefix string = '10.0.0.0/16'
 
-@description('The name of the key vault to be created.')
-
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
   name: managedIdentityName
   location: location
@@ -46,7 +77,6 @@ var subnets = [
   containerAppsSubnet
 ]
 
-// Deploy an Azure Virtual Network 
 module vnetModule 'modules/vnet.bicep' = {
   name: '${deployment().name}--vnet'
   params: {
@@ -92,7 +122,6 @@ resource secret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
   ]
 }
 
-// Log analytics and App Insights for visibility 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
   name: logAnalyticsWorkspaceName
   location: location
@@ -117,7 +146,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// Container Apps environment 
 resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview' = {
   name: containerAppsEnvName
   location: location
@@ -143,7 +171,6 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
   ]
 }
 
-// Storage Account to act as state store 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: storageAccountName
   location: location
@@ -218,49 +245,43 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2021-03-15' = {
 }
 
 
-module albumViewerCapp 'modules/container-app.bicep' = {
-  name: '${deployment().name}--album-viewer'
-  dependsOn: [
-    containerAppsEnv
-    albumServiceCapp
-  ]
-  params: {
-    location: location
-    containerAppsEnvName: containerAppsEnvName
-    appName: 'album-viewer'
-    registryPassword: registryPassword
-    registryUsername: registryUsername
-    containerImage: viewerImage
-    targetPort: 3000
-    registryServer: registryServer
-    identity: managedIdentity.id
-    transport: 'http'
-    useIdentity: true
-  }
-}
+// module albumViewerCapp 'modules/container-app.bicep' = {
+//   name: '${deployment().name}--album-viewer'
+//   dependsOn: [
+//     containerAppsEnv
+//     albumServiceCapp
+//   ]
+//   params: {
+//     location: location
+//     containerAppsEnvName: containerAppsEnvName
+//     appName: 'album-viewer'
+//     registryPassword: registryPassword
+//     registryUsername: registryUsername
+//     containerImage: viewerImage
+//     targetPort: 3000
+//     registryServer: registryServer
+//     identity: managedIdentity.id
+//     transport: 'http'
+//     useIdentity: true
+//   }
+// }
 
-module albumServiceCapp 'modules/container-app.bicep' = {
-  name: '${deployment().name}--album-api'
-  dependsOn: [
-    containerAppsEnv
-  ]
-  params: {
-    location: location
-    containerAppsEnvName: containerAppsEnvName
-    appName: 'album-api'
-    registryPassword: registryPassword
-    registryUsername: registryUsername
-    containerImage: apiImage
-    targetPort: 80
-    registryServer: registryServer
-    identity: managedIdentity.id
-    transport: 'http'
-    useIdentity: true
-  }
-}
-
-output env array = [
-  'Environment name: ${containerAppsEnv.name}'
-  'Storage account name: ${storageAccount.name}'
-  'Storage container name: ${blobContainer.name}'
-]
+// module albumServiceCapp 'modules/container-app.bicep' = {
+//   name: '${deployment().name}--album-api'
+//   dependsOn: [
+//     containerAppsEnv
+//   ]
+//   params: {
+//     location: location
+//     containerAppsEnvName: containerAppsEnvName
+//     appName: 'album-api'
+//     registryPassword: registryPassword
+//     registryUsername: registryUsername
+//     containerImage: apiImage
+//     targetPort: 80
+//     registryServer: registryServer
+//     identity: managedIdentity.id
+//     transport: 'http'
+//     useIdentity: true
+//   }
+// }
