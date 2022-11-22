@@ -26,3 +26,7 @@ RUN wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
 
 # Install Azure Dev CLI
 RUN curl -fsSL https://aka.ms/install-azd.sh | bash
+
+#Install AZ CLI extension for Container Apps
+RUN az config set extension.use_dynamic_install=yes_without_prompt \
+    && az extension add --name containerapp --yes
