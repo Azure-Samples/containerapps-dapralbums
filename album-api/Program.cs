@@ -51,7 +51,7 @@ app.MapGet("/albums", async (HttpContext context, DaprClient client, AlbumApiCon
         app.Logger.LogInformation($"{albums.Count} albums were retrieved from the state store");
     } else {
         albums = await StateStoreExtensions.InitializeAlbumState(client, config);
-        app.Logger.LogInformation($"Initialized state store with {albums.Count}.");
+        app.Logger.LogInformation($"Initialized empty state store with {albums.Count} albums.");
     }
 
     return Results.Ok(albums);
