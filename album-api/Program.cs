@@ -32,8 +32,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-app.Urls.Add("http://0.0.0.0:${ASPNETCORE_URLS}");
-
 app.MapGet("/", async context =>
 {
     await context.Response.WriteAsync("Hit the /albums endpoint to retrieve a list of albums!");
@@ -59,7 +57,7 @@ app.Run();
 // the album model
 public record Album(int Id, string Title, string Artist, double Price, string Image_url)
 {
-    public static List<Album> GetAll()
+    public static List<Album> DefaultAlbums()
     {
         var albums = new List<Album>(){
             new Album(1, "You, Me and an App Id", "Daprize", 10.99, "https://aka.ms/albums-daprlogo"),
@@ -85,8 +83,6 @@ public class AlbumApiConfiguration
     }
 
     public string CollectionId => _config.GetValue<string>("COLLECTION_ID") ?? "GreatestHits";
-    public string DefaultHttpPort => _config.GetValue<string>("DAPR_HTTP_PORT") ?? "3500";
-    public string DefaultHttpServer => _config.GetValue<string>("HTTP_SERVER") ?? "http://127.0.0.1";
     public string AlbumStateStore => "statestore";
 }
 
@@ -95,7 +91,7 @@ public static class StateStoreExtensions
 {
     public static async Task<List<Album>> InitializeAlbumState(DaprClient client, AlbumApiConfiguration config)
     {
-        var albums = Album.GetAll();
+        var albums = Album.DefaultAlbums();
 
         await client.SaveStateAsync($"{config.AlbumStateStore}", $"{config.CollectionId}", albums);
 

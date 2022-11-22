@@ -10,6 +10,16 @@
 - [Dapr](https://docs.dapr.io/getting-started/install-dapr-cli/)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli)
 
+## Initialize Dapr
+Dapr is a developer API that powers a number of microservices features like service invoke and state management.  Dapr must be initialized just once in this 
+dev container to enable these features, APIs, and dependencies like the local Redis container.
+
+1. Initialize Dapr and depenencies.  
+
+```bash
+dapr init
+```
+
 ### Build and run with VS Code
 
 1. Fork the sample repo
@@ -28,13 +38,14 @@ Any changes made to the project and checked into your GitHub repo will trigger a
 
 1. Fork the sample repo
 1. Clone the repo: `git clone https://github.com/{username}/containerapps-dapralbums`
-1. Build the sample:
+1. Build the sample and install local dev cert:
 
 ```bash
 cd album-viewer
 npm install
 cd ../album-api
 dotnet restore
+dotnet dev-certs https
 ```
 
 1. Run the sample
@@ -45,11 +56,23 @@ The Dapr CLI will launch our application and dapr alongside one another. In the 
 
 For local debugging and development, the component used by the album api to manage state is a containerized redis instance running on Docker. Once deployed to Azure, this component is swapped for an Azure Storage account and because of the pluggability Dapr provides, no code changes are required in order to make this change.
 
+##### Using Tye
+
+Once the projects are restored and built, the easiest way to start the microservices application is using Tye.  Simply do this in the main folder:
+
+```bash
+tye run
+```
+
+##### Using individual `dapr run` commands
+
+Alternatively you can `dapr run` each microservice to start the app and its respective sidecar as follows:
+
 Now, it's time to run the `album-api` in a new terminal window- ensure you are sitting in the directory which holds the app code.
 
 ```bash
 cd album-api
-dapr run --app-id album-api --app-port 80 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
+dapr run --app-id album-api --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
 ```
 
 Once the api is up and running, launch a new terminal to run the frontend application.
