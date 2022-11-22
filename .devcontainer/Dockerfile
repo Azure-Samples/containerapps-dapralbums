@@ -34,14 +34,12 @@ ENV \
     DOTNET_USE_POLLING_FILE_WATCHER=true \
     # Skip extraction of XML docs - generally not useful within an image/container - helps performance
     NUGET_XMLDOC_MODE=skip \
-    # PowerShell telemetry for docker image usage
-    POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-DotnetSDK-Debian-11
 
 # Install Dapr CLI
 RUN wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash
 
 # Install Azure Dev CLI
-RUN curl -fsSL https://aka.ms/install-azd.sh | bash
+#RUN curl -fsSL https://aka.ms/install-azd.sh | bash
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -58,18 +56,4 @@ RUN curl -fSL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/
     && tar -oxzf dotnet.tar.gz -C /usr/share/dotnet ./packs ./sdk ./sdk-manifests ./templates ./LICENSE.txt ./ThirdPartyNotices.txt \
     && rm dotnet.tar.gz \
     # Trigger first run experience by running arbitrary cmd
-    && dotnet help
-
-# Install PowerShell global tool
-RUN powershell_version=7.3.0-rc.1 \
-    && curl -fSL --output PowerShell.Linux.x64.$powershell_version.nupkg https://pwshtool.blob.core.windows.net/tool/$powershell_version/PowerShell.Linux.x64.$powershell_version.nupkg \
-    && powershell_sha512='06018db4af748c0ae0fcafb8f7335d2568b3ea557270103e8023106012d99cc2bf63b6c5c13450a6982bcb53cc5f8f03971a57c38c79e200f1dcab3e3def9bae' \
-    && echo "$powershell_sha512  PowerShell.Linux.x64.$powershell_version.nupkg" | sha512sum -c - \
-    && mkdir -p /usr/share/powershell \
-    && dotnet tool install --add-source / --tool-path /usr/share/powershell --version $powershell_version PowerShell.Linux.x64 \
-    && dotnet nuget locals all --clear \
-    && rm PowerShell.Linux.x64.$powershell_version.nupkg \
-    && ln -s /usr/share/powershell/pwsh /usr/bin/pwsh \
-    && chmod 755 /usr/share/powershell/pwsh \
-    # To reduce image size, remove the copy nupkg that nuget keeps.
-    && find /usr/share/powershell -print | grep -i '.*[.]nupkg$' | xargs rm
+    # && dotnet help
