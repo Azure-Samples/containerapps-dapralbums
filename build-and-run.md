@@ -32,23 +32,25 @@ dapr init
 
 Any changes made to the project and checked into your GitHub repo will trigger a GitHub action to build and deploy
 
-### Build and run manually
+### Build and run 
 
 #### Steps
 
 1. Fork the sample repo
-1. Clone the repo: `git clone https://github.com/{username}/containerapps-dapralbums`
-1. Build the sample and install local dev cert:
+2. Clone the repo: `git clone https://github.com/{username}/containerapps-dapralbums`
+3. Build the sample and install local dev cert:
+
+No steps are needed here since it's already taken care of by the `deploy/local-dev/localinit.sh` and `build.sh` scripts.
+
+4. Run the sample
 
 ```bash
-cd album-viewer
-npm install
-cd ../album-api
-dotnet restore
-dotnet dev-certs https
+tye run
 ```
 
-1. Run the sample
+Browse to port 3000 for the running application and port 8000 for the Tye dashboard to see errors
+
+(Note if you see errors or recycle of Tye, make sure you did a `dapr init` first)
 
 #### Local run and debug
 
@@ -67,6 +69,16 @@ tye run
 ##### Using individual `dapr run` commands
 
 Alternatively you can `dapr run` each microservice to start the app and its respective sidecar as follows:
+
+The init scripts ensure each application is restored and built before running.  You can do this manually by: 
+
+```bash
+cd album-viewer
+npm install
+cd ../album-api
+dotnet restore
+dotnet dev-certs https
+```
 
 Now, it's time to run the `album-api` in a new terminal window- ensure you are sitting in the directory which holds the app code.
 
