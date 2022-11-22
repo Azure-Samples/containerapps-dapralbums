@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<AlbumApiConfiguration>();
+builder.Services.AddSingleton<DaprClient>(new DaprClientBuilder().Build());
 
 builder.Services.AddCors(options =>
 {
@@ -43,16 +44,15 @@ app.MapGet("/", async context =>
 
 app.MapGet("/albums", async (HttpContext context, DaprClient client, AlbumApiConfiguration config) =>
 {
+    // Get the albums from the Dapr state store
     var albums = await client.GetStateAsync<List<Album>>($"{config.AlbumStateStore}", $"{config.CollectionId}");
 
-    // Get the albums from the state store.
-    //client.GetState
-
-    // var response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
-    // var albums = await response.ReadAlbumArrayFromResponse(client, config);
-
-    if (albums != null && albums.Count > 0)
+    if (albums != null && albums.Count > 0) {
         app.Logger.LogInformation($"{albums.Count} albums were retrieved from the state store");
+    } else {
+        albums = await StateStoreExtensions.InitializeAlbumState(client, config);
+        app.Logger.LogInformation($"Initialized state store with {albums.Count}.");
+    }
 
     return Results.Ok(albums);
 }).WithName("GetAlbums");
@@ -93,55 +93,14 @@ public class AlbumApiConfiguration
     public string AlbumStateStore => "statestore";
 }
 
-// extension methods for requesting,
-// deserializing, and returning the
-// array of albums
-public static class HttpResponseMessageAlbumExtensions
+// extension methods to for data cache and state store initialization
+public static class StateStoreExtensions
 {
-    public static async Task<List<Album>> ReadAlbumArrayFromResponse(this HttpResponseMessage response, HttpClient client, DaprClient daprClient, AlbumApiConfiguration config)
+    public static async Task<List<Album>> InitializeAlbumState(DaprClient client, AlbumApiConfiguration config)
     {
-        var json = await response.Content.ReadAsStringAsync();
-        var albums = new List<Album>();
+        var albums = Album.GetAll();
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"Exception loading state. StatusCode: {response.StatusCode}. Message: {json}");
-        }
-        // Collection Id does not exist, therefore the database needs to be seeded 
-        else if (response.StatusCode == HttpStatusCode.NoContent)
-        {
-            // Seed the state store 
-            var albumState = new[] {
-                new
-                {
-                    key = config.CollectionId,
-                    value = Album.GetAll()
-                }
-            };
-
-            //var content = new StringContent(JsonSerializer.Serialize(albumState), Encoding.UTF8, "application/json");
-
-            //paul here
-            await daprClient.SaveStateAsync($"{config.AlbumStateStore}", $"{config.CollectionId}", Album.GetAll());
-            
-            // override the initial response with the resulting data.
-            //response = await client.PostAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}", content);
-
-            // if (!response.IsSuccessStatusCode)
-            // {
-            //     throw new Exception($"Exception seeding state. StatusCode: {response.StatusCode}. Message: {json}");
-            // };
-
-            // Get the newly seeded albums from the state store
-            //response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
-            
-
-            albums = await daprClient.GetStateAsync<List<Album>>($"{config.AlbumStateStore}", $"{config.CollectionId}");
-        } else {
-            
-            albums = JsonSerializer.Deserialize<List<Album>>(json);
-        }
-
+        await client.SaveStateAsync($"{config.AlbumStateStore}", $"{config.CollectionId}", albums);
 
         return albums;
     }
