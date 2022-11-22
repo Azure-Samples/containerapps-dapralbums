@@ -49,7 +49,7 @@ Now, it's time to run the `album-api` in a new terminal window- ensure you are s
 
 ```bash
 cd album-api
-dapr run --app-id album-api --app-port 80 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
+dapr run --app-id album-api --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
 ```
 
 Once the api is up and running, launch a new terminal to run the frontend application.

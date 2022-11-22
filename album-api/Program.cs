@@ -35,8 +35,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-app.Urls.Add("http://0.0.0.0:${ASPNETCORE_URLS}");
-
 app.MapGet("/", async context =>
 {
     await context.Response.WriteAsync("Hit the /albums endpoint to retrieve a list of albums!");
@@ -88,8 +86,6 @@ public class AlbumApiConfiguration
     }
 
     public string CollectionId => _config.GetValue<string>("COLLECTION_ID") ?? "GreatestHits";
-    public string DefaultHttpPort => _config.GetValue<string>("DAPR_HTTP_PORT") ?? "3500";
-    public string DefaultHttpServer => _config.GetValue<string>("HTTP_SERVER") ?? "http://127.0.0.1";
     public string AlbumStateStore => "statestore";
 }
 
