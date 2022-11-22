@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Dapr.Client;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -20,6 +21,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+var client = new DaprClientBuilder().Build();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,11 +41,15 @@ app.MapGet("/", async context =>
     await context.Response.WriteAsync("Hit the /albums endpoint to retrieve a list of albums!");
 });
 
-app.MapGet("/albums", async (HttpContext context, HttpClient client, AlbumApiConfiguration config) =>
+app.MapGet("/albums", async (HttpContext context, DaprClient client, AlbumApiConfiguration config) =>
 {
+    var albums = await client.GetStateAsync<List<Album>>($"{config.AlbumStateStore}", $"{config.CollectionId}");
+
     // Get the albums from the state store.
-    var response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
-    var albums = await response.ReadAlbumArrayFromResponse(client, config);
+    //client.GetState
+
+    // var response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
+    // var albums = await response.ReadAlbumArrayFromResponse(client, config);
 
     if (albums != null && albums.Count > 0)
         app.Logger.LogInformation($"{albums.Count} albums were retrieved from the state store");
@@ -91,9 +98,10 @@ public class AlbumApiConfiguration
 // array of albums
 public static class HttpResponseMessageAlbumExtensions
 {
-    public static async Task<List<Album>> ReadAlbumArrayFromResponse(this HttpResponseMessage response, HttpClient client, AlbumApiConfiguration config)
+    public static async Task<List<Album>> ReadAlbumArrayFromResponse(this HttpResponseMessage response, HttpClient client, DaprClient daprClient, AlbumApiConfiguration config)
     {
         var json = await response.Content.ReadAsStringAsync();
+        var albums = new List<Album>();
 
         if (!response.IsSuccessStatusCode)
         {
@@ -111,23 +119,29 @@ public static class HttpResponseMessageAlbumExtensions
                 }
             };
 
-            var content = new StringContent(JsonSerializer.Serialize(albumState), Encoding.UTF8, "application/json");
+            //var content = new StringContent(JsonSerializer.Serialize(albumState), Encoding.UTF8, "application/json");
 
+            //paul here
+            await daprClient.SaveStateAsync($"{config.AlbumStateStore}", $"{config.CollectionId}", Album.GetAll());
+            
             // override the initial response with the resulting data.
-            response = await client.PostAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}", content);
+            //response = await client.PostAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}", content);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Exception seeding state. StatusCode: {response.StatusCode}. Message: {json}");
-            };
+            // if (!response.IsSuccessStatusCode)
+            // {
+            //     throw new Exception($"Exception seeding state. StatusCode: {response.StatusCode}. Message: {json}");
+            // };
 
             // Get the newly seeded albums from the state store
-            response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
+            //response = await client.GetAsync($"{config.DefaultHttpServer}:{config.DefaultHttpPort}/v1.0/state/{config.AlbumStateStore}/{config.CollectionId}");
+            
 
-            json = await response.Content.ReadAsStringAsync();
+            albums = await daprClient.GetStateAsync<List<Album>>($"{config.AlbumStateStore}", $"{config.CollectionId}");
+        } else {
+            
+            albums = JsonSerializer.Deserialize<List<Album>>(json);
         }
 
-        var albums = JsonSerializer.Deserialize<List<Album>>(json);
 
         return albums;
     }
