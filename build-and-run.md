@@ -10,6 +10,16 @@
 - [Dapr](https://docs.dapr.io/getting-started/install-dapr-cli/)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli)
 
+## Initialize Dapr
+Dapr is a developer API that powers a number of microservices features like service invoke and state management.  Dapr must be initialized just once in this 
+dev container to enable these features, APIs, and dependencies like the local Redis container.
+
+1. Initialize Dapr and depenencies.  
+
+```bash
+dapr init
+```
+
 ### Build and run with VS Code
 
 1. Fork the sample repo
@@ -28,13 +38,14 @@ Any changes made to the project and checked into your GitHub repo will trigger a
 
 1. Fork the sample repo
 1. Clone the repo: `git clone https://github.com/{username}/containerapps-dapralbums`
-1. Build the sample:
+1. Build the sample and install local dev cert:
 
 ```bash
 cd album-viewer
 npm install
 cd ../album-api
 dotnet restore
+dotnet dev-certs https
 ```
 
 1. Run the sample
