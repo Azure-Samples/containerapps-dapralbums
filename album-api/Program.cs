@@ -60,7 +60,7 @@ app.Run();
 // the album model
 public record Album(int Id, string Title, string Artist, double Price, string Image_url)
 {
-    public static List<Album> GetAll()
+    public static List<Album> DefaultAlbums()
     {
         var albums = new List<Album>(){
             new Album(1, "You, Me and an App Id", "Daprize", 10.99, "https://aka.ms/albums-daprlogo"),
@@ -94,7 +94,7 @@ public static class StateStoreExtensions
 {
     public static async Task<List<Album>> InitializeAlbumState(DaprClient client, AlbumApiConfiguration config)
     {
-        var albums = Album.GetAll();
+        var albums = Album.DefaultAlbums();
 
         await client.SaveStateAsync($"{config.AlbumStateStore}", $"{config.CollectionId}", albums);
 
