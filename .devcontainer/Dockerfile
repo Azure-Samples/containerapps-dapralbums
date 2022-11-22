@@ -27,3 +27,6 @@ RUN wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
 
 # Install Azure Dev CLI
 RUN curl -fsSL https://aka.ms/install-azd.sh | bash
+
+# Install Node LTS using nvm
+RUN nvm install v18.12.1
