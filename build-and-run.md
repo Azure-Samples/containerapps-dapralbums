@@ -56,6 +56,18 @@ The Dapr CLI will launch our application and dapr alongside one another. In the 
 
 For local debugging and development, the component used by the album api to manage state is a containerized redis instance running on Docker. Once deployed to Azure, this component is swapped for an Azure Storage account and because of the pluggability Dapr provides, no code changes are required in order to make this change.
 
+##### Using Tye
+
+Once the projects are restored and built, the easiest way to start the microservices application is using Tye.  Simply do this in the main folder:
+
+```bash
+tye run
+```
+
+##### Using individual `dapr run` commands
+
+Alternatively you can `dapr run` each microservice to start the app and its respective sidecar as follows:
+
 Now, it's time to run the `album-api` in a new terminal window- ensure you are sitting in the directory which holds the app code.
 
 ```bash
