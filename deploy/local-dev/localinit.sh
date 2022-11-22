@@ -6,6 +6,9 @@ az extension add --name containerapp --yes
 # install Node.js and NPM LTS
 nvm install v18.12.1
 
+# initialize Dapr
+dapr init
+
 # install Tye
 dotnet tool install -g Microsoft.Tye --version "0.11.0-alpha.22111.1"
 
