@@ -1,6 +1,3 @@
-using System.Net;
-using System.Text;
-using System.Text.Json;
 using Dapr.Client;
 
 var builder = WebApplication.CreateBuilder();

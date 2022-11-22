@@ -1,55 +1,81 @@
-param location string = resourceGroup().location
-param uniqueSeed string = '${subscription().subscriptionId}-${resourceGroup().name}'
-param uniqueSuffix string = 'da-${uniqueString(uniqueSeed)}'
-param containerAppsEnvName string = 'env-${uniqueSuffix}'
-param logAnalyticsWorkspaceName string = 'log-${uniqueSuffix}'
-param appInsightsName string = 'appinsights-${uniqueSuffix}'
-param storageAccountName string = 'storage${replace(uniqueSuffix, '-', '')}'
-param blobContainerName string = 'albums'
-param registryName string
-param objectId string 
-param clientId string 
-param clientSecret string
-@secure()
-param registryPassword string
-param testLocation string = 'northcentralusstage'
+@minLength(1)
+@maxLength(50)
+@description('Name of the the environment which is used to generate a short unique hash used in all resources.')
+param environmentName string
 
-param registryUsername string
+@minLength(1)
+@description('Primary location for all resources')
+param location string
+
+param containerAppsEnvName string = 'env-${environmentName}'
+param logAnalyticsWorkspaceName string = 'log-${environmentName}'
+param appInsightsName string = 'appinsights-${environmentName}'
+param storageAccountName string = 'storage${replace(environmentName, '-', '')}'
+param vaultName string = 'kv-${environmentName}'
+param vnetName string = 'vnet-${environmentName}'
+param blobContainerName string = 'albums'
+param managedIdentityName string = 'dapr-albums-mi'
+param secretStoreName string = 'secretstore'
 param apiImage string
 param viewerImage string
 
-@description('The name of the key vault to be created.')
-param vaultName string = 'kv-${uniqueSuffix}'
 @description('Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet.')
 param tenantId string = subscription().tenantId
-@description('Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge.')
-param secretsPermissions array = [
-  'get'
-  'list'
+
+@secure()
+param registryPassword string
+param registryServer string
+param registryUsername string
+param vnetPrefix string = '10.0.0.0/16'
+
+@description('The name of the key vault to be created.')
+
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+  name: managedIdentityName
+  location: location
+}
+
+var containerAppsSubnet = {
+  name: 'ContainerAppsSubnet'
+  properties: {
+    addressPrefix: '10.0.0.0/23'
+  }
+}
+
+var subnets = [
+  containerAppsSubnet
 ]
-@description('Specifies whether the key vault is a standard vault or a premium vault.')
-@allowed([
-  'standard'
-  'premium'
-])
-param skuName string = 'standard'
+
+// Deploy an Azure Virtual Network 
+module vnetModule 'modules/vnet.bicep' = {
+  name: '${deployment().name}--vnet'
+  params: {
+    location: location
+    vnetName: vnetName
+    vnetPrefix: vnetPrefix
+    subnets: subnets
+  }
+}
 
 resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   name: vaultName
   location: location
   properties: {
-    tenantId:  tenantId
+    tenantId: tenantId
     accessPolicies: [
       {
-        objectId: objectId
+        objectId: managedIdentity.properties.principalId
         tenantId: tenantId
         permissions: {
-          secrets: secretsPermissions
+          secrets: [
+            'get'
+            'list'
+          ]
         }
       }
     ]
     sku: {
-      name: skuName
+      name: 'premium'
       family: 'A'
     }
   }
@@ -87,19 +113,23 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   kind: 'web'
   properties: {
     Application_Type: 'web'
-    WorkspaceResourceId:logAnalyticsWorkspace.id
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 
 // Container Apps environment 
 resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview' = {
   name: containerAppsEnvName
-  location: testLocation
+  location: location
   sku: {
     name: 'Consumption'
   }
   properties: {
-    daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
+    daprAIInstrumentationKey: appInsights.properties.InstrumentationKey
+    vnetConfiguration: {
+      internal: false
+      infrastructureSubnetId: '${vnetModule.outputs.vnetId}/subnets/${containerAppsSubnet.name}'
+    }
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
@@ -108,6 +138,9 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-06-01-preview'
       }
     }
   }
+  dependsOn: [
+    vnetModule
+  ]
 }
 
 // Storage Account to act as state store 
@@ -132,32 +165,58 @@ resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/container
 
 module daprStateStore 'modules/dapr-statestore.bicep' = {
   name: '${deployment().name}--dapr-statestore'
-  dependsOn:[
+  dependsOn: [
     storageAccount
     containerAppsEnv
   ]
   params: {
-    containerAppsEnvName : containerAppsEnvName
+    containerAppsEnvName: containerAppsEnvName
     storage_account_name: storageAccountName
     storage_container_name: blobContainerName
-    secretStoreComponent: 'secretstore'
-}
+    secretStoreName: secretStoreName
+  }
 }
 
 module daprSecretStore 'modules/dapr-secretstore.bicep' = {
   name: '${deployment().name}--dapr-secretstore'
-  dependsOn:[
+  dependsOn: [
     storageAccount
     containerAppsEnv
   ]
   params: {
-    containerAppsEnvName : containerAppsEnvName
+    containerAppsEnvName: containerAppsEnvName
     vaultName: vaultName
-    tenantId: tenantId
-    clientId: clientId
-    clientSecret: clientSecret
+    identityClientId: managedIdentity.properties.clientId
+    secretStoreName: secretStoreName
+  }
 }
+
+resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2021-03-15' = {
+  name: '${deployment().name}-cosmos'
+  location: location
+  kind: 'GlobalDocumentDB'
+  properties: {
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Eventual'
+      maxStalenessPrefix: 1
+      maxIntervalInSeconds: 5
+    }
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+      }
+    ]
+    databaseAccountOfferType: 'Standard'
+    enableAutomaticFailover: true
+    capabilities: [
+      {
+        name: 'EnableTable'
+      }
+    ]
+  }
 }
+
 
 module albumViewerCapp 'modules/container-app.bicep' = {
   name: '${deployment().name}--album-viewer'
@@ -166,14 +225,17 @@ module albumViewerCapp 'modules/container-app.bicep' = {
     albumServiceCapp
   ]
   params: {
-    location: testLocation
+    location: location
     containerAppsEnvName: containerAppsEnvName
     appName: 'album-viewer'
     registryPassword: registryPassword
     registryUsername: registryUsername
     containerImage: viewerImage
-    httpPort: 3000
-    registryServer: registryName
+    targetPort: 3000
+    registryServer: registryServer
+    identity: managedIdentity.id
+    transport: 'http'
+    useIdentity: true
   }
 }
 
@@ -183,18 +245,21 @@ module albumServiceCapp 'modules/container-app.bicep' = {
     containerAppsEnv
   ]
   params: {
-    location: testLocation
+    location: location
     containerAppsEnvName: containerAppsEnvName
     appName: 'album-api'
     registryPassword: registryPassword
     registryUsername: registryUsername
     containerImage: apiImage
-    httpPort: 80
-    registryServer: registryName
+    targetPort: 80
+    registryServer: registryServer
+    identity: managedIdentity.id
+    transport: 'http'
+    useIdentity: true
   }
 }
 
-output env array=[
+output env array = [
   'Environment name: ${containerAppsEnv.name}'
   'Storage account name: ${storageAccount.name}'
   'Storage container name: ${blobContainer.name}'
