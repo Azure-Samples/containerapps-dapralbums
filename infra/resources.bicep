@@ -11,29 +11,6 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-
   location: location
 }
 
-// subnets for the container apps environment
-var containerAppsSubnet = {
-  name: 'ContainerAppsSubnet'
-  properties: {
-    addressPrefix: '10.0.0.0/23'
-  }
-}
-
-var subnets = [
-  containerAppsSubnet
-]
-
-// virtual network for the environment
-module vnet './core/network/vnet.bicep' = {
-  name: '${deployment().name}vnet'
-  params: {
-    location: location
-    vnetName: '${abbrs.networkVirtualNetworks}${resourceToken}'
-    vnetPrefix: '10.0.0.0/16'
-    subnets: subnets
-  }
-}
-
 // Monitor application with Azure Monitor
 module monitoring './core/monitor/monitoring.bicep' = {
   name: 'monitoring'
@@ -122,12 +99,10 @@ module containerApps './core/host/container-apps.bicep' = {
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
     containerRegistrySku: { name: 'Basic' }
     daprAIInstrumentationKey: monitoring.outputs.applicationInsightsInstrumentationKey
-    vnetInfrastructureSubnetId: '${vnet.outputs.vnetId}/subnets/${containerAppsSubnet.name}'
   }
   dependsOn: [
     storage
     cosmos
-    vnet
   ]
 }
 

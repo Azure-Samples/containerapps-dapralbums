@@ -4,8 +4,6 @@ param location string = resourceGroup().location
 param containerAppsEnvironmentName string = ''
 param logAnalyticsWorkspaceName string = ''
 param daprAIInstrumentationKey string = ''
-param vnetInfrastructureSubnetId string = ''
-param vnetIsInternal bool = false
 
 var abbrs = loadJsonContent('../../abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -17,10 +15,6 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-03-01'
   tags: tags
   properties: {
     daprAIInstrumentationKey: !empty(daprAIInstrumentationKey) ? daprAIInstrumentationKey : null
-    vnetConfiguration: empty(vnetInfrastructureSubnetId) ? null : {
-      internal: vnetIsInternal
-      infrastructureSubnetId: vnetInfrastructureSubnetId
-    }
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {

@@ -7,8 +7,6 @@ param containerRegistryName string = ''
 param containerRegistrySku object = { name: 'Standard' }
 param logAnalyticsWorkspaceName string = ''
 param daprAIInstrumentationKey string = ''
-param vnetInfrastructureSubnetId string = ''
-param vnetIsInternal bool = false
 
 module containerAppsEnvironment 'container-apps-environment.bicep' = {
   name: '${containerAppsGroupName}-container-apps-environment'
@@ -18,8 +16,6 @@ module containerAppsEnvironment 'container-apps-environment.bicep' = {
     containerAppsEnvironmentName: containerAppsEnvironmentName
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
     daprAIInstrumentationKey: daprAIInstrumentationKey
-    vnetInfrastructureSubnetId: vnetInfrastructureSubnetId
-    vnetIsInternal: vnetIsInternal
   }
 }
 

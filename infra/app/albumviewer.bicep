@@ -21,12 +21,12 @@ module albumviewer '../core/host/container-app.bicep' = {
     name: '${environmentName}${serviceName}'
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
-    containerMemory: '2.0Gi'
-    containerCpuCoreCount: '1.0'
+    containerMemory: '0.5Gi'
+    containerCpuCoreCount: '0.25'
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
     serviceName: serviceName
     external: true
-    targetPort: 80
+    targetPort: 3000
     isDaprEnabled: true
     daprApp: 'albumviewer'
     useIdentity: true

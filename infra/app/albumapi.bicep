@@ -21,8 +21,8 @@ module albumapi '../core/host/container-app.bicep' = {
     name: '${environmentName}${serviceName}'
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
-    containerMemory: '2.0Gi'
-    containerCpuCoreCount: '1.0'
+    containerMemory: '0.5Gi'
+    containerCpuCoreCount: '0.25'
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
     serviceName: serviceName
     external: true

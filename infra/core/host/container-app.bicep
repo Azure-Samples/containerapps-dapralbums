@@ -13,6 +13,8 @@ param targetPort int = 80
 param serviceName string
 param useIdentity bool = false
 param identity string = 'none'
+param minReplicas int = 1
+param maxReplicas int = 1
 
 param isDaprEnabled bool = false
 param daprApp string = name
@@ -68,6 +70,10 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
       }
     }
     template: {
+      scale: {
+        maxReplicas: maxReplicas
+        minReplicas: minReplicas
+      }
       containers: [
         {
           image: imageName
