@@ -1,4 +1,6 @@
 using Dapr.Client;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.Extensibility;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -8,6 +10,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<AlbumApiConfiguration>();
 builder.Services.AddSingleton<DaprClient>(new DaprClientBuilder().Build());
+builder.Services.AddWebAppApplicationInsights("Album API");
 
 builder.Services.AddCors(options =>
 {
@@ -96,5 +99,29 @@ public static class StateStoreExtensions
         await client.SaveStateAsync($"{config.AlbumStateStore}", $"{config.CollectionId}", albums);
 
         return albums;
+    }
+}
+
+public class ApplicationMapNodeNameInitializer : ITelemetryInitializer
+{
+    public ApplicationMapNodeNameInitializer(string name)
+    {
+        Name = name;
+    }
+
+    public string Name { get; set; }
+
+    public void Initialize(ITelemetry telemetry)
+    {
+        telemetry.Context.Cloud.RoleName = Name;
+    }
+}
+
+public static class ApplicationInsightsServiceCollectionExtensions
+{
+    public static void AddWebAppApplicationInsights(this IServiceCollection services, string applicationName)
+    {
+        services.AddApplicationInsightsTelemetry();
+        services.AddSingleton<ITelemetryInitializer>((services) => new ApplicationMapNodeNameInitializer(applicationName));
     }
 }
