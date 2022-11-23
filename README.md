@@ -10,13 +10,13 @@ The solution is composed of two microservices: the album API and the album viewe
 
 ![architecture](./assets/architecture.png)
 
-#### Album API (`album-api`)
+#### Album API (`albumapi`)
 
-The [`album-api`](./album-api) is an .NET 6 minimal Web API that retrieves a list of Albums from Azure Storage using the Dapr State Store API. Upon running the application for the first time the database will be seeded. For subsequent calls, the list of albums will be retrieved from the backing state store.
+The [`albumapi`](./albumapi) is an .NET 6 minimal Web API that retrieves a list of Albums from Azure Storage using the Dapr State Store API. Upon running the application for the first time the database will be seeded. For subsequent calls, the list of albums will be retrieved from the backing state store.
 
 #### Album Viewer (`python-app`)
 
-The [`album-viewer`](./album-viewer) is a node application through which the albums retrieved by the API are surfaced. In order to display the repository of albums, the album viewer microservice uses the Dapr Service invocation API to contact the backend album API.
+The [`albumviewer`](./albumviewer) is a node application through which the albums retrieved by the API are surfaced. In order to display the repository of albums, the album viewer microservice uses the Dapr Service invocation API to contact the backend album API.
 
 ## Deploy via GitHub Actions
 
@@ -32,7 +32,7 @@ The entire solution is configured with [GitHub Actions](https://github.com/featu
 
 3. Open the Actions tab, select the **Build and Deploy** action and choose to run the workflow. The workflow will build the necessary container images, push them to your private Github Package Registry and deploy the necessary Azure services along with two Container Apps for the respective services.
 
-4. Once the GitHub Actions have completed successfully, navigate to the [Azure Portal](https://portal.azure.com) and select the resource group you created. Open the `album-viewer` container app and browse to the FQDN displayed on the overview blade. You should see the sample application up and running.
+4. Once the GitHub Actions have completed successfully, navigate to the [Azure Portal](https://portal.azure.com) and select the resource group you created. Open the `albumviewer` container app and browse to the FQDN displayed on the overview blade. You should see the sample application up and running.
 
 ## Build and Run
 

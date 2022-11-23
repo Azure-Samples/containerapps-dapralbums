@@ -11,6 +11,12 @@ param keyVaultName string = ''
 param managedIdentity bool = !(empty(keyVaultName))
 param targetPort int = 80
 param serviceName string
+param useIdentity bool = false
+param identity string = 'none'
+
+param isDaprEnabled bool = false
+param daprApp string = name
+param daprAppProtocol string = 'http'
 
 @description('CPU cores allocated to a single container instance, e.g. 0.5')
 param containerCpuCoreCount string = '0.5'
@@ -23,10 +29,15 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 var tags = { 'azd-env-name': environmentName }
 
 resource app 'Microsoft.App/containerApps@2022-03-01' = {
-  name: !empty(name)? name : '${abbrs.appContainerApps}${serviceName}-${resourceToken}'
+  name: !empty(name) ? name : '${abbrs.appContainerApps}${serviceName}-${resourceToken}'
   location: location
   tags: union(tags, { 'azd-service-name': serviceName })
-  identity: managedIdentity ? { type: 'SystemAssigned' } : null
+  identity:  useIdentity ? {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identity}' : {}
+    }    
+  }: null 
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
@@ -49,6 +60,12 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
           passwordSecretRef: 'registry-password'
         }
       ]
+      dapr: {
+        enabled: isDaprEnabled
+        appId: daprApp
+        appProtocol: daprAppProtocol
+        appPort: targetPort
+      }
     }
     template: {
       containers: [

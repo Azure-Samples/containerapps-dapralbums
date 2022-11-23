@@ -25,6 +25,6 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
         value: identityClientId
       }
     ]
-    scopes: ['album-api']
+    scopes: ['albumapi']
   }
 }

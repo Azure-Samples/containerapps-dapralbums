@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33106.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "album-api", "album-api.csproj", "{A4B23006-DF88-4262-BB65-4FE1EBD49E65}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "albumapi", "albumapi.csproj", "{A4B23006-DF88-4262-BB65-4FE1EBD49E65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

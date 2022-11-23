@@ -73,25 +73,25 @@ Alternatively you can `dapr run` each microservice to start the app and its resp
 The init scripts ensure each application is restored and built before running.  You can do this manually by: 
 
 ```bash
-cd album-viewer
+cd albumviewer
 npm install
-cd ../album-api
+cd ../albumapi
 dotnet restore
 dotnet dev-certs https
 ```
 
-Now, it's time to run the `album-api` in a new terminal window- ensure you are sitting in the directory which holds the app code.
+Now, it's time to run the `albumapi` in a new terminal window- ensure you are sitting in the directory which holds the app code.
 
 ```bash
-cd album-api
-dapr run --app-id album-api --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
+cd albumapi
+dapr run --app-id albumapi --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
 ```
 
 Once the api is up and running, launch a new terminal to run the frontend application.
 
 ```bash
-cd album-viewer
-dapr run --app-id album-viewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start
+cd albumviewer
+dapr run --app-id albumviewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start
 ```
 
 Validate the applications are up and running by navigating to localhost:3000!

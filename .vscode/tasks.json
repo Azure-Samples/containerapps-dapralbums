@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/album-api/album-api.csproj",
+        "${workspaceFolder}/albumapi/albumapi.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -19,7 +19,7 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/album-api/album-api.csproj",
+        "${workspaceFolder}/albumapi/albumapi.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -33,7 +33,7 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/album-api/album-api.csproj"
+        "${workspaceFolder}/albumapi/albumapi.csproj"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -42,7 +42,7 @@
       "label": "npm install",
       "command": "npm install",
       "options": {
-        "cwd": "${workspaceFolder}/album-viewer"
+        "cwd": "${workspaceFolder}/albumviewer"
       },
       "presentation": {
         "close": true
@@ -54,7 +54,7 @@
       "args": [
         "run",
         "--app-id",
-        "album-viewer",
+        "albumviewer",
         "--app-port",
         "3000",
         "--dapr-grpc-port",
@@ -90,7 +90,7 @@
       "args": [
         "run",
         "--app-id",
-        "album-api",
+        "albumapi",
         "--components-path",
         "${workspaceFolder}/dapr-components/local",
         "--app-port",
@@ -125,7 +125,7 @@
     {
       "label": "Dapr down: Album API",
       "command": "dapr",
-      "args": ["stop", "--app-id", "album-api"],
+      "args": ["stop", "--app-id", "albumapi"],
       "problemMatcher": [],
       "presentation": {
         "close": true
@@ -134,7 +134,7 @@
     {
       "label": "Dapr down: Album Viewer",
       "command": "dapr",
-      "args": ["stop", "--app-id", "album-viewer"],
+      "args": ["stop", "--app-id", "albumviewer"],
       "problemMatcher": [],
       "presentation": {
         "close": true

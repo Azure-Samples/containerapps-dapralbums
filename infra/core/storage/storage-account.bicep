@@ -29,3 +29,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
 }
 
 output name string = storage.name
+
+// bradyg apologies to the bicep team, this is rude.
+var key = listKeys(resourceId('Microsoft.Storage/storageAccounts/', storage.name), '2021-09-01').keys[0].value
+output key string = key

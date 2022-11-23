@@ -1,12 +1,12 @@
 name: dapralbums
 
 services:
-- name: album-api
+- name: albumapi
   executable: dapr
-  args: run --app-id album-api --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run --urls "http://localhost:5007"
-  workingDirectory: ./album-api/
+  args: run --app-id albumapi --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run --urls "http://localhost:5007"
+  workingDirectory: ./albumapi/
 
-- name: album-viewer
+- name: albumviewer
   executable: dapr
-  args: run --app-id album-viewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start --urls "http://localhost:3000"
-  workingDirectory: ./album-viewer/
+  args: run --app-id albumviewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start --urls "http://localhost:3000"
+  workingDirectory: ./albumviewer/

@@ -11,4 +11,4 @@ spec:
     - name: redisPassword
       value: ""
 scopes:
-  - album-api
+  - albumapi

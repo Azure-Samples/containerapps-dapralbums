@@ -40,15 +40,15 @@ jobs:
       packages: write
 
     outputs:
-      api-image: ${{ steps.image-tag.outputs.image-album-api }}
-      ui-image: ${{ steps.image-tag.outputs.image-album-viewer }}
+      api-image: ${{ steps.image-tag.outputs.image-albumapi }}
+      ui-image: ${{ steps.image-tag.outputs.image-albumviewer }}
 
     strategy:
       matrix:
         services:
           [
-            { "appName": "album-api", "directory": "./album-api" },
-            { "appName": "album-viewer", "directory": "./album-viewer" },
+            { "appName": "albumapi", "directory": "./albumapi" },
+            { "appName": "albumviewer", "directory": "./albumviewer" },
           ]
 
     steps:

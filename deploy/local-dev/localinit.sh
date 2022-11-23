@@ -13,7 +13,7 @@ dapr init
 dotnet tool install -g Microsoft.Tye --version "0.11.0-alpha.22111.1"
 
 # add developer cert for .NET project
-cd album-api
+cd albumapi
 dotnet dev-certs https
 cd ..
 
