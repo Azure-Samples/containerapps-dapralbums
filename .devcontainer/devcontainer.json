@@ -31,6 +31,7 @@
       "ms-vscode.vscode-node-azure-pack",
       "ms-dotnettools.csharp",
       "ms-dotnettools.vscode-dotnet-runtime",
+      "ms-azuretools.vscode-dapr",
       "GitHub.copilot"
   ],
   "forwardPorts": [
