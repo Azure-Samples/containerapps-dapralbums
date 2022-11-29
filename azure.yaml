@@ -8,8 +8,6 @@ services:
     language: csharp
     host: containerapp
     module: app/albumapi
-    docker:
-      path: ./Dockerfile
   albumviewer:
     project: albumviewer
     language: js
