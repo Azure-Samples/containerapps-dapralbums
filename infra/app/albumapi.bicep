@@ -23,7 +23,7 @@ module albumapi '../core/host/container-app.bicep' = {
     containerRegistryName: containerRegistryName
     containerMemory: '0.5Gi'
     containerCpuCoreCount: '0.25'
-    imageName: !empty(imageName) ? imageName : 'nginx:latest'
+    imageName: !empty(imageName) ? imageName : 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
     serviceName: serviceName
     external: true
     targetPort: 80
