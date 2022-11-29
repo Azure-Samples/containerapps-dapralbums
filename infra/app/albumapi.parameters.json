@@ -7,9 +7,6 @@
         },
         "location": {
             "value": "${AZURE_LOCATION}"
-        },
-        "imageName": {
-            "value": "${SERVICE_ALBUMAPI_IMAGE_NAME}"
         }
     }
 }
