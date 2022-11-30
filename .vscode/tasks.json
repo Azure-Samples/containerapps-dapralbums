@@ -94,7 +94,7 @@
         "--components-path",
         "${workspaceFolder}/dapr-components/local",
         "--app-port",
-        "80",
+        "5000",
         "--dapr-grpc-port",
         "3501",
         "--dapr-http-port",

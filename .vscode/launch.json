@@ -21,7 +21,7 @@
       "preLaunchTask": "Dapr up: Album Viewer",
       "postDebugTask": "Dapr down: Album Viewer",
       "env": {
-        "DAPR_HTTP_PORT": "3180",
+        "DAPR_HTTP_PORT": "3500",
         "DAPR_GRPC_PORT": "3101",
         "DAPR_METRICS_PORT": "9091",
         "albumapi": "albumapi",
