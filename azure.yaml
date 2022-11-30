@@ -2,12 +2,13 @@
 
 name: DaprAlbums
 services:
-  albumapi:
-    project: albumapi
-    dist: build
-    language: csharp
-    host: containerapp
-    module: app/albumapi
+  # uncomment once we want to deploy everything using AZD w/o VS
+  # albumapi:
+  #   project: albumapi
+  #   dist: build
+  #   language: csharp
+  #   host: containerapp
+  #   module: app/albumapi
   albumviewer:
     project: albumviewer
     language: js
