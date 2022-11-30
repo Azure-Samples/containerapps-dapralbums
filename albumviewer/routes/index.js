@@ -3,17 +3,22 @@ var router = express.Router();
 require("dotenv").config();
 const axios = require("axios");
 
-const DaprHttpPort = process.env.DAPR_HTTP_PORT || "3500";
-const AlbumService = process.env.albumapi_NAME || "albumapi";
+const DAPR_HOST = process.env.DAPR_HOST || "localhost";
+const DAPR_HTTP_PORT = process.env.DAPR_HTTP_PORT || "3500";
 const Background = process.env.BACKGROUND_COLOR || "black";
 
 /* GET home page. */
 router.get("/", async function (req, res, next) {
   try {
-    const url = `http://127.0.0.1:${DaprHttpPort}/v1.0/invoke/${AlbumService}/method/albums`;
-    console.log("Invoking albumapi via dapr: " + url);
-    axios.headers = { "Content-Type": "application/json" };
-    var response = await axios.get(url);
+    const url = `http://${DAPR_HOST}:${DAPR_HTTP_PORT}/albums`;
+    let axiosConfig = {
+      headers: {
+          "dapr-app-id": "albumapi",
+      }
+    }
+    console.log("Invoking albumapi via dapr:  -H 'dapr-app-id: albumapi' " + url );
+    var response = await axios.get(url, axiosConfig);
+
     data = response.data || [];
     console.log("Response from backend albums api: ", data);
     res.render("index", {

@@ -23,8 +23,8 @@
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_URLS": "http://*:5000;https://*:5001",
-        "DAPR_HTTP_PORT": "3500",
-        "DAPR_GRPC_PORT": "3501"
+        "DAPR_HTTP_PORT": "3501",
+        "DAPR_GRPC_PORT": "43501"
       }
     },
     {
@@ -39,7 +39,7 @@
       "postDebugTask": "Dapr down: Album Viewer",
       "env": {
         "DAPR_HTTP_PORT": "3500",
-        "DAPR_GRPC_PORT": "3101",
+        "DAPR_GRPC_PORT": "43500",
         "DAPR_METRICS_PORT": "9091",
         "albumapi": "albumapi",
         "PORT": "3000"

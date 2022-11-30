@@ -58,9 +58,9 @@
         "--app-port",
         "3000",
         "--dapr-grpc-port",
-        "3101",
+        "43500",
         "--dapr-http-port",
-        "3180"
+        "3500"
       ],
       "isBackground": true,
       "presentation": {
@@ -96,9 +96,9 @@
         "--app-port",
         "5000",
         "--dapr-grpc-port",
-        "3501",
+        "43501",
         "--dapr-http-port",
-        "3500"
+        "3501"
       ],
       "isBackground": true,
       "presentation": {
