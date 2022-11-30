@@ -11,6 +11,23 @@
   ],
   "configurations": [
     {
+      "name": "Album API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Dapr up: Album API",
+      "postDebugTask": "Dapr down: Album API",
+      "program": "${workspaceFolder}/albumapi/bin/Debug/net7.0/albumapi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/albumapi",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://*:5000;https://*:5001",
+        "DAPR_HTTP_PORT": "3500",
+        "DAPR_GRPC_PORT": "3501"
+      }
+    },
+    {
       "name": "Album Viewer",
       "type": "node",
       "request": "launch",
@@ -32,23 +49,20 @@
         "action": "openExternally",
         "pattern": "listening on port ([0-9]+)",
         "uriFormat": "http://localhost:%s"
-      }
-    },
-    {
-      "name": "Album API",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "Dapr up: Album API",
-      "postDebugTask": "Dapr down: Album API",
-      "program": "${workspaceFolder}/albumapi/bin/Debug/net7.0/albumapi.dll",
-      "args": [],
-      "cwd": "${workspaceFolder}/albumapi",
-      "stopAtEntry": false,
-      "env": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://*:5000;https://*:5001",
-        "DAPR_HTTP_PORT": "3500",
-        "DAPR_GRPC_PORT": "3501"
+      },
+      "launchBrowser": {
+        "enabled": true,
+        "args": "${auto-detect-url}",
+        "windows": {
+            "command": "cmd.exe",
+            "args": "/C start ${auto-detect-url}"
+        },
+        "osx": {
+            "command": "open"
+        },
+        "linux": {
+            "command": "xdg-open"
+        }
       }
     }
   ]
