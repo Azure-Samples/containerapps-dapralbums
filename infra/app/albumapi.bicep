@@ -2,7 +2,6 @@ param environmentName string
 param location string = resourceGroup().location
 param containerAppsEnvironmentName string = ''
 param containerRegistryName string = ''
-param imageName string = ''
 param serviceName string = 'albumapi'
 
 var abbrs = loadJsonContent('../abbreviations.json')
@@ -23,7 +22,7 @@ module albumapi '../core/host/container-app.bicep' = {
     containerRegistryName: containerRegistryName
     containerMemory: '0.5Gi'
     containerCpuCoreCount: '0.25'
-    imageName: !empty(imageName) ? imageName : 'nginx:latest'
+    imageName: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
     serviceName: serviceName
     external: true
     targetPort: 80

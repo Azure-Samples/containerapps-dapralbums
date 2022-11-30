@@ -75,6 +75,24 @@ public record Album(int Id, string Title, string Artist, double Price, string Im
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // app configuration settings
 public class AlbumApiConfiguration
 {
