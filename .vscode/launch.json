@@ -40,7 +40,7 @@
       "request": "launch",
       "preLaunchTask": "Dapr up: Album API",
       "postDebugTask": "Dapr down: Album API",
-      "program": "${workspaceFolder}/albumapi/bin/Debug/net6.0/albumapi.dll",
+      "program": "${workspaceFolder}/albumapi/bin/Debug/net7.0/albumapi.dll",
       "args": [],
       "cwd": "${workspaceFolder}/albumapi",
       "stopAtEntry": false,
