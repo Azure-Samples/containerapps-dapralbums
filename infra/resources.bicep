@@ -139,28 +139,6 @@ module daprStateStore './core/host/dapr-statestore.bicep' = {
   ]
 }
 
-// Remove this to create the "real" container app with the API image
-module albumapi './core/host/container-app.bicep' = {
-  name: 'albumapi'
-  params: {
-    environmentName: env
-    location: location
-    name: '${env}albumapi'
-    containerAppsEnvironmentName: containerApps.outputs.containerAppsEnvironmentName
-    containerRegistryName: containerApps.outputs.containerRegistryName
-    containerMemory: '0.5Gi'
-    containerCpuCoreCount: '0.25'
-    imageName: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
-    serviceName: 'albumapi'
-    external: true
-    targetPort: 80
-    isDaprEnabled: true
-    daprApp: 'albumapi'
-    useIdentity: true
-    identity: managedIdentity.id
-  }
-}
-
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerApps.outputs.containerRegistryEndpoint
 output AZURE_CONTAINER_REGISTRY_NAME string = containerApps.outputs.containerRegistryName
