@@ -142,6 +142,7 @@ module daprStateStore './core/host/dapr-statestore-cosmosdb.bicep' = {
     cosmos_collection_name: cosmosCollectionName
     cosmos_url: cosmos.outputs.endpoint
     secretStoreName: secretStoreName
+    cosmos_account_name: cosmos.outputs.accountName
   }
   dependsOn: [
     storage

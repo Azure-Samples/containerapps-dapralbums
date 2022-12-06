@@ -1,11 +1,16 @@
 param cosmos_url string
 param cosmos_database_name string
 param cosmos_collection_name string
+param cosmos_account_name string
 param containerAppsEnvName string
 param secretStoreName string
 
 resource caEnvironment  'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
   name: containerAppsEnvName
+}
+
+resource cosmos  'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
+  name: cosmos_account_name
 }
 
 resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06-01-preview' = {
@@ -31,6 +36,10 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2022-06
       }
       {
         name: 'masterKey'
+        value: cosmos.listKeys().primaryMasterKey
+      }
+      {
+        name: 'masterKeyKV'
         secretRef: 'storageaccountkey'
       }
     ]
