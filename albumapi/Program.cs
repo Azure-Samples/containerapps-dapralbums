@@ -1,6 +1,7 @@
 using Dapr.Client;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -58,7 +59,11 @@ app.MapGet("/albums", async (HttpContext context, DaprClient client, AlbumApiCon
 app.Run();
 
 // the album model
-public record Album(int Id, string Title, string Artist, double Price, string Image_url)
+public record Album([property: JsonPropertyName("id")] int Id, 
+                                    [property: JsonPropertyName("title")] string Title, 
+                                    [property: JsonPropertyName("artist")] string Artist, 
+                                    [property: JsonPropertyName("price")] double Price, 
+                                    [property: JsonPropertyName("image_url")] string Image_url)
 {
     public static List<Album> DefaultAlbums()
     {

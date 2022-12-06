@@ -1,6 +1,9 @@
 param env string
 param location string = resourceGroup().location
 param secretStoreName string = 'secretstore'
+param cosmosAccountName string = ''
+param cosmosDatabaseName string = 'albums'
+param cosmosCollectionName string = 'albums'
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, env, location))
@@ -47,18 +50,26 @@ module storage './core/storage/storage-account.bicep' = {
   }
 }
 
-// Cosmos DB for when we shift to using it for Dapr storage
-module cosmos './core/database/cosmos/cosmos-account.bicep' = {
-  name: '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+// /// Give the API the role to access Cosmos
+// module apiCosmosSqlRoleAssign './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = {
+//   name: 'api-cosmos-access'
+//   params: {
+//     accountName: cosmos.outputs.accountName
+//     roleDefinitionId: cosmos.outputs.roleDefinitionId
+//     principalId: containerApps.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
+//   }
+// }
+
+// / Cosmos DB for when we shift to using it for Dapr state management
+module cosmos './app/db.bicep' = {
+  name: 'cosmos'
   params: {
-    kind: 'GlobalDocumentDB'
-    environmentName: env
-    keyVaultName: keyVault.name
+    accountName: !empty(cosmosAccountName) ? cosmosAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+    databaseName: cosmosDatabaseName
+    collectionName: cosmosCollectionName
     location: location
+    keyVaultName: keyVault.outputs.keyVaultName
   }
-  dependsOn: [
-    keyVault
-  ]
 }
 
 // Blob storage container
@@ -81,7 +92,7 @@ module keyVaultSecret './core/security/keyvault-secret.bicep' = {
   params: {
     environmentName: env
     secretName: 'storageaccountkey'
-    secretValue: storage.outputs.key
+    secretValue: cosmos.outputs.connectionStringKey
     location: location    
   }
   dependsOn: [
@@ -123,12 +134,13 @@ module daprSecretStore './core/host/dapr-secretstore.bicep' = {
 }
 
 // Dapr state store
-module daprStateStore './core/host/dapr-statestore.bicep' = {
+module daprStateStore './core/host/dapr-statestore-cosmosdb.bicep' = {
   name: '${deployment().name}--dapr-statestore'
   params: {
     containerAppsEnvName: containerApps.outputs.containerAppsEnvironmentName
-    storage_account_name: storage.name
-    storage_container_name: blobContainer.name
+    cosmos_database_name: cosmosDatabaseName
+    cosmos_collection_name: cosmosCollectionName
+    cosmos_url: cosmos.outputs.endpoint
     secretStoreName: secretStoreName
   }
   dependsOn: [
