@@ -12,11 +12,56 @@ The solution is composed of two microservices: the album API and the album viewe
 
 #### Album API (`albumapi`)
 
-The [`albumapi`](./albumapi) is an .NET 6 minimal Web API that retrieves a list of Albums from Azure Storage using the Dapr State Store API. Upon running the application for the first time the database will be seeded. For subsequent calls, the list of albums will be retrieved from the backing state store.
+The [`albumapi`](./albumapi) is an .NET 7 minimal Web API that retrieves a list of Albums from Azure Storage using the Dapr State Store API. Upon running the application for the first time the state store will be initialized with data. For subsequent calls, the list of albums will be retrieved from the backing state store.
 
 #### Album Viewer (`python-app`)
 
-The [`albumviewer`](./albumviewer) is a node application through which the albums retrieved by the API are surfaced. In order to display the repository of albums, the album viewer microservice uses the Dapr Service invocation API to contact the backend album API.
+The [`albumviewer`](./albumviewer) is a Node.js client application through which the albums retrieved by the API are surfaced. In order to display the repository of albums, the album viewer microservice uses the Dapr Service invocation API to contact the backend album API.
+
+## Run locally
+
+### Run in Visual Studio
+
+1. Load the `albumap.sln` solution in VS 2022.  
+2. Press `F5` to run in the debugger
+
+The API service is started.  
+
+### Run in VS Code
+
+1. Load this folder, e.g. `code .`
+2. Press `F5` to run in the debugger
+
+### Run in CodeSpaces
+
+1. Load this repo in a CodeSpace clicking this button
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=update-to-dotnet-7&repo=568924714&machine=basicLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
+
+2. Press `F5` to run in the debugger
+
+### Run in the Terminal
+
+1. Start the `albumapi` app in a new Terminal window
+
+```bash
+cd ./albumapi
+dotnet run
+```
+2. Open another Terminal window, restore and start the `albumviewer` app
+
+```bash
+cd ./albumviewer
+npm install
+npm start
+```
+
+## Deploy using the Azure Developer CLI
+
+Provision and deploy the entire application and dependencies using [Azure Developer CLI](https://aka.ms/azd)
+```bash
+azd up
+```
 
 ## Deploy via GitHub Actions
 
@@ -34,6 +79,3 @@ The entire solution is configured with [GitHub Actions](https://github.com/featu
 
 4. Once the GitHub Actions have completed successfully, navigate to the [Azure Portal](https://portal.azure.com) and select the resource group you created. Open the `albumviewer` container app and browse to the FQDN displayed on the overview blade. You should see the sample application up and running.
 
-## Build and Run
-
-[Click here for instructions on building and running the application locally](build-and-run.md)
