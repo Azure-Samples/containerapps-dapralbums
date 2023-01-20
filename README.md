@@ -43,9 +43,14 @@ The Web client app will be running on http://localhost:3000
 
 ### Run in VS Code
 
-1. Load this folder, e.g. `code .`
+1. Load this folder in VS Code
+
+```bash
+code .
+```
+
 2. Press `F5` to run in the debugger
-3. In the ports window, right click on the endpoint running on port 3000, Open in Browser
+3. In the PORTS window, right click on the endpoint running on port 3000, Open in Browser
 
 
 ### Run in CodeSpaces
