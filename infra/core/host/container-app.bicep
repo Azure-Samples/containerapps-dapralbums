@@ -1,24 +1,16 @@
-param environmentName string
+param name string
 param location string = resourceGroup().location
-param name string = ''
+param tags object = {}
 
 param containerAppsEnvironmentName string = ''
+param containerName string = 'main'
 param containerRegistryName string = ''
 param env array = []
 param external bool = true
 param imageName string
 param keyVaultName string = ''
-param managedIdentity bool = !(empty(keyVaultName))
+param managedIdentity bool = !empty(keyVaultName)
 param targetPort int = 80
-param serviceName string
-param useIdentity bool = false
-param identity string = 'none'
-param minReplicas int = 1
-param maxReplicas int = 1
-
-param isDaprEnabled bool = false
-param daprApp string = name
-param daprAppProtocol string = 'http'
 
 @description('CPU cores allocated to a single container instance, e.g. 0.5')
 param containerCpuCoreCount string = '0.5'
@@ -26,20 +18,11 @@ param containerCpuCoreCount string = '0.5'
 @description('Memory allocated to a single container instance, e.g. 1Gi')
 param containerMemory string = '1.0Gi'
 
-var abbrs = loadJsonContent('../../abbreviations.json')
-var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
-var tags = { 'azd-env-name': environmentName }
-
 resource app 'Microsoft.App/containerApps@2022-03-01' = {
-  name: !empty(name) ? name : '${abbrs.appContainerApps}${serviceName}-${resourceToken}'
+  name: name
   location: location
-  tags: union(tags, { 'azd-service-name': serviceName })
-  identity:  useIdentity ? {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${identity}' : {}
-    }    
-  }: null 
+  tags: tags
+  identity: { type: managedIdentity ? 'SystemAssigned' : 'None' }
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
@@ -62,22 +45,12 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
           passwordSecretRef: 'registry-password'
         }
       ]
-      dapr: {
-        enabled: isDaprEnabled
-        appId: daprApp
-        appProtocol: daprAppProtocol
-        appPort: targetPort
-      }
     }
     template: {
-      scale: {
-        maxReplicas: maxReplicas
-        minReplicas: minReplicas
-      }
       containers: [
         {
           image: imageName
-          name: 'main'
+          name: containerName
           env: env
           resources: {
             cpu: json(containerCpuCoreCount)
@@ -90,14 +63,15 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
 }
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
-  name: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
+  name: containerAppsEnvironmentName
 }
 
 // 2022-02-01-preview needed for anonymousPullEnabled
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01-preview' existing = {
-  name: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistryRegistries}${resourceToken}'
+  name: containerRegistryName
 }
 
 output identityPrincipalId string = managedIdentity ? app.identity.principalId : ''
+output imageName string = imageName
 output name string = app.name
 output uri string = 'https://${app.properties.configuration.ingress.fqdn}'

@@ -9,7 +9,19 @@
       "value": "${AZURE_LOCATION}"
     },
     "principalId": {
-        "value": "${AZURE_PRINCIPAL_ID}"
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "apiImageName": {
+      "value": "${SERVICE_API_IMAGE_NAME}"
+    },
+    "webImageName": {
+      "value": "${SERVICE_WEB_IMAGE_NAME}"
+    },
+    "webApiBaseUrl": {
+      "value": "${REACT_APP_API_BASE_URL}"
+    },
+    "useAPIM": {
+      "value": "${USE_APIM=false}"
     }
   }
 }

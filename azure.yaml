@@ -2,13 +2,13 @@
 
 name: DaprAlbums
 services:
-  albumapi:
+  api:
     project: albumapi
     dist: build
     language: csharp
     host: containerapp
     module: app/albumapi
-  albumviewer:
+  web:
     project: albumviewer
     language: js
     host: containerapp
