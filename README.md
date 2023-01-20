@@ -49,7 +49,7 @@ The Web client app will be running on http://localhost:3000
 code .
 ```
 
-2. Press `F5` to run in the debugger
+2. In the Run and Debug menu, selected "All services", and Press `Start Debugging (F5)`
 3. In the PORTS window, right click on the endpoint running on port 3000, Open in Browser
 
 
@@ -59,7 +59,7 @@ code .
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=self-deploying-at-once&repo=568924714&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
 
-2. Press `F5` to run in the debugger
+2. In the Run and Debug menu, selected "All services", and Press `Start Debugging (F5)`
 3. In the ports window, right click on the endpoint running on port 3000, Open in Browser
 
 ### Run in the Terminal
