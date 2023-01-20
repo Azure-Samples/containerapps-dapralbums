@@ -1,6 +1,6 @@
 # Azure Container Apps: Dapr Albums Sample
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=update-to-dotnet-7&repo=568924714&machine=basicLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
+[![Open in GitHub Codespaces](https://github.com/codespaces/new?hide_repo_select=true&ref=self-deploying-at-once&repo=568924714&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
 
 This repository was created to help users quickly deploy Dapr-enabled microservices to Azure Container Apps.
 
@@ -12,49 +12,72 @@ The solution is composed of two microservices: the album API and the album viewe
 
 #### Album API (`albumapi`)
 
-The [`albumapi`](./albumapi) is an .NET 7 minimal Web API that retrieves a list of Albums from Azure Storage using the Dapr State Store API. Upon running the application for the first time the state store will be initialized with data. For subsequent calls, the list of albums will be retrieved from the backing state store.
+The [`albumapi`](./albumapi/) is an .NET 7 minimal Web API that retrieves a list of Albums from Azure Storage using the Dapr State Store API. Upon running the application for the first time the state store will be initialized with data. For subsequent calls, the list of albums will be retrieved from the backing state store.
 
 #### Album Viewer (`python-app`)
 
-The [`albumviewer`](./albumviewer) is a Node.js client application through which the albums retrieved by the API are surfaced. In order to display the repository of albums, the album viewer microservice uses the Dapr Service invocation API to contact the backend album API.
+The [`albumviewer`](./albumviewer/) is a Node.js client application through which the albums retrieved by the API are surfaced. In order to display the repository of albums, the album viewer microservice uses the Dapr Service invocation API to contact the backend album API.
 
 ## Run locally
 
 ### Run in Visual Studio
 
-1. Load the `albumap.sln` solution in VS 2022.  
-2. Press `F5` to run in the debugger
+1. Load the `albumapi.sln` solution in VS 2022 for any editing
+2. To run, we'll still use a Terminal
 
-The API service is started.  
+```bash
+cd ./albumapi/
+dotnet build
+dapr run --app-id albumapi --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run --urls "http://localhost:5007"
+```
+
+The API service is started on http://localhost:5007 and can be called with the http://localhost:5007/albums route.  
+
+```bash
+cd ./albumviewer/
+npm install
+dapr run --app-id albumviewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start --urls "http://localhost:3000"
+```
+
+The Web client app will be running on http://localhost:3000
 
 ### Run in VS Code
 
 1. Load this folder, e.g. `code .`
 2. Press `F5` to run in the debugger
+3. In the ports window, right click on the endpoint running on port 3000, Open in Browser
+
 
 ### Run in CodeSpaces
 
 1. Load this repo in a CodeSpace clicking this button
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=update-to-dotnet-7&repo=568924714&machine=basicLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=self-deploying-at-once&repo=568924714&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
 
 2. Press `F5` to run in the debugger
+3. In the ports window, right click on the endpoint running on port 3000, Open in Browser
 
 ### Run in the Terminal
 
 1. Start the `albumapi` app in a new Terminal window
 
 ```bash
-cd ./albumapi
-dotnet run
+dotnet build
+dapr run --app-id albumapi --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run --urls "http://localhost:5007"
 ```
+
+The API service is started on http://localhost:5007 and can be called with the http://localhost:5007/albums route.  
+
+
 2. Open another Terminal window, restore and start the `albumviewer` app
 
 ```bash
-cd ./albumviewer
+cd ./albumviewer/
 npm install
-npm start
+dapr run --app-id albumviewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start --urls "http://localhost:3000"
 ```
+
+The Web client app will be running on http://localhost:3000
 
 ## Deploy using the Azure Developer CLI
 
