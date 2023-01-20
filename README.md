@@ -1,6 +1,6 @@
 # Azure Container Apps: Dapr Albums Sample
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/new?hide_repo_select=true&ref=self-deploying-at-once&repo=568924714&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=self-deploying-at-once&repo=568924714&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
 
 This repository was created to help users quickly deploy Dapr-enabled microservices to Azure Container Apps.
 
