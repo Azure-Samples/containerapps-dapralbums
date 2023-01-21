@@ -46,4 +46,3 @@ output connectionStringKey string = connectionStringKey
 output endpoint string = cosmos.properties.documentEndpoint
 output id string = cosmos.id
 output name string = cosmos.name
-

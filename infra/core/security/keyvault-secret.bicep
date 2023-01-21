@@ -1,23 +1,30 @@
-param environmentName string
-param location string = resourceGroup().location
-
-param secretName string
+param name string
+param tags object = {}
+param keyVaultName string
+param contentType string = 'string'
+@description('The value of the secret. Provide only derived values like blob storage access, but do not hard code any secrets in your templates')
 @secure()
 param secretValue string
-param keyVaultName string = ''
 
-var abbrs = loadJsonContent('../../abbreviations.json')
-var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
+param enabled bool = true
+param exp int = 0
+param nbf int = 0
 
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-}
-
-resource secret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
+  name: name
+  tags: tags
   parent: keyVault
-  name: secretName
   properties: {
+    attributes: {
+      enabled: enabled
+      exp: exp
+      nbf: nbf
+    }
+    contentType: contentType
     value: secretValue
   }
 }
 
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+}
