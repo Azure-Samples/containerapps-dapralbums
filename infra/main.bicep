@@ -14,6 +14,7 @@ param location string
 //      "value": "myGroupName"
 // }
 param apiContainerAppName string = ''
+param apiServiceName string = 'albumapi'
 param applicationInsightsDashboardName string = ''
 param applicationInsightsName string = ''
 param containerAppsEnvironmentName string = ''
@@ -24,6 +25,8 @@ param keyVaultName string = ''
 param logAnalyticsName string = ''
 param resourceGroupName string = ''
 param webContainerAppName string = ''
+param webServiceName string = 'albumviewer'
+param secretStoreName string = 'secretstore'
 //param apimServiceName string = ''
 
 @description('Flag to use Azure API Management to mediate the calls between the Web frontend and the backend API')
@@ -52,66 +55,73 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-// Container apps host (including container registry)
-module containerApps './core/host/container-apps.bicep' = {
-  name: 'container-apps'
+// // Container apps host (including container registry)
+// module containerApps './core/host/container-apps.bicep' = {
+//   name: 'container-apps'
+//   scope: rg
+//   params: {
+//     name: 'app'
+//     containerAppsEnvironmentName: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
+//     containerRegistryName: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistryRegistries}${resourceToken}'
+//     location: location
+//     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
+//   }
+// }
+
+// Shared App Env with Dapr configuration for db
+module appEnv './app/app-env.bicep' = {
+  name: '${deployment().name}-app-env'
   scope: rg
   params: {
-    name: 'app'
-    containerAppsEnvironmentName: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
+    containerAppsEnvName: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
     containerRegistryName: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistryRegistries}${resourceToken}'
     location: location
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
+    cosmos_database_name: cosmos.outputs.databaseName
+    cosmos_collection_name: cosmos.outputs.databaseName
+    cosmos_url: cosmos.outputs.endpoint
+    secretStoreName: secretStoreName
+    vaultName: keyVault.outputs.name
+    managedIdentityName: '${abbrs.managedIdentityUserAssignedIdentities}${resourceToken}'
+    principalId: principalId
+    //scopes: [apiServiceName]
   }
+  dependsOn: [
+    cosmos
+  ]
 }
 
 // Web frontend
 module web './app/web.bicep' = {
-  name: 'web'
+  name: webServiceName
   scope: rg
   params: {
-    name: !empty(webContainerAppName) ? webContainerAppName : '${abbrs.appContainerApps}web-${resourceToken}'
+    name: !empty(webContainerAppName) ? webContainerAppName : '${abbrs.appContainerApps}${webServiceName}-${resourceToken}'
     location: location
     imageName: webImageName
     apiBaseUrl: !empty(webApiBaseUrl) ? webApiBaseUrl : api.outputs.SERVICE_API_URI
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    containerAppsEnvironmentName: containerApps.outputs.environmentName
-    containerRegistryName: containerApps.outputs.registryName
+    containerAppsEnvironmentName: appEnv.outputs.environmentName
+    containerRegistryName: appEnv.outputs.registryName
+    serviceName: webServiceName
     keyVaultName: keyVault.outputs.name
   }
 }
 
 // Api backend
 module api './app/api.bicep' = {
-  name: 'api'
+  name: apiServiceName
   scope: rg
   params: {
-    name: !empty(apiContainerAppName) ? apiContainerAppName : '${abbrs.appContainerApps}api-${resourceToken}'
+    name: !empty(apiContainerAppName) ? apiContainerAppName : '${abbrs.appContainerApps}${apiServiceName}-${resourceToken}'
     location: location
     imageName: apiImageName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    containerAppsEnvironmentName: containerApps.outputs.environmentName
-    containerRegistryName: containerApps.outputs.registryName
+    containerAppsEnvironmentName: appEnv.outputs.environmentName
+    containerRegistryName: appEnv.outputs.registryName
+    serviceName: apiServiceName
     keyVaultName: keyVault.outputs.name
   }
-}
-
-// Dapr state store
-module daprStateStore './core/host/dapr-statestore-cosmosdb.bicep' = {
-  name: '${deployment().name}--dapr-statestore'
-  scope: rg
-  params: {
-    containerAppsEnvName: containerApps.outputs.environmentName
-    cosmos_database_name: cosmosDatabaseName
-    cosmos_collection_name: cosmosDatabaseName
-    cosmos_url: cosmos.outputs.endpoint
-    secretStoreName: keyVaultName
-    cosmos_account_name: cosmos.outputs.accountName
-  }
-  dependsOn: [
-    cosmos
-    containerApps
-  ]
 }
 
 // Give the API access to KeyVault
@@ -121,6 +131,16 @@ module apiKeyVaultAccess './core/security/keyvault-access.bicep' = {
   params: {
     keyVaultName: keyVault.outputs.name
     principalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
+  }
+}
+
+// Give the Managed Identity access to KeyVault
+module managedIdentityKeyVaultAccess './core/security/keyvault-access.bicep' = {
+  name: 'managed-identity-keyvault-access'
+  scope: rg
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: appEnv.outputs.managedIdentityPrincipalId
   }
 }
 
@@ -136,6 +156,7 @@ module cosmos './app/db.bicep' = {
     keyVaultName: keyVault.outputs.name
   }
 }
+
 
 // Store secrets in a keyvault
 module keyVault './core/security/keyvault.bicep' = {
@@ -196,9 +217,9 @@ output AZURE_COSMOS_DATABASE_NAME string = cosmos.outputs.databaseName
 // App outputs
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 output APPLICATIONINSIGHTS_NAME string = monitoring.outputs.applicationInsightsName
-output AZURE_CONTAINER_ENVIRONMENT_NAME string = containerApps.outputs.environmentName
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerApps.outputs.registryLoginServer
-output AZURE_CONTAINER_REGISTRY_NAME string = containerApps.outputs.registryName
+output AZURE_CONTAINER_ENVIRONMENT_NAME string = appEnv.outputs.environmentName
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = appEnv.outputs.registryLoginServer
+output AZURE_CONTAINER_REGISTRY_NAME string = appEnv.outputs.registryName
 output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
 output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output AZURE_LOCATION string = location
@@ -209,4 +230,5 @@ output REACT_APP_WEB_BASE_URL string = web.outputs.SERVICE_WEB_URI
 output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
 output SERVICE_WEB_NAME string = web.outputs.SERVICE_WEB_NAME
 output USE_APIM bool = useAPIM
+output PRINCIPAL_ID string = principalId
 //output SERVICE_API_ENDPOINTS array = useAPIM ? [ apimApi.outputs.SERVICE_API_URI, api.outputs.SERVICE_API_URI ]: []

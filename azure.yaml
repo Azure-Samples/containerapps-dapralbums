@@ -7,9 +7,9 @@ services:
     dist: build
     language: csharp
     host: containerapp
-    module: app/albumapi
+    module: app/api
   web:
     project: albumviewer
     language: js
     host: containerapp
-    module: app/albumviewer
+    module: app/web

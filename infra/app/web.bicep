@@ -8,14 +8,14 @@ param containerAppsEnvironmentName string
 param containerRegistryName string
 param imageName string = ''
 param keyVaultName string
-param serviceName string = 'web'
+param serviceName string = 'albumviewer'
 
 module app '../core/host/container-app.bicep' = {
   name: '${serviceName}-container-app-module'
   params: {
     name: name
     location: location
-    tags: union(tags, { 'azd-service-name': serviceName })
+    tags: union(tags, { 'azd-service-name': 'web' })
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
     env: [
@@ -33,6 +33,8 @@ module app '../core/host/container-app.bicep' = {
       }
     ]
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
+    isDaprEnabled: true
+    containerName: serviceName
     keyVaultName: keyVault.name
     targetPort: 80
   }
