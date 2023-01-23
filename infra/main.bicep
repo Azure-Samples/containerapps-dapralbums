@@ -55,6 +55,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
+
 // // Container apps host (including container registry)
 // module containerApps './core/host/container-apps.bicep' = {
 //   name: 'container-apps'
@@ -67,6 +68,17 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 //     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
 //   }
 // }
+
+module security 'app/security.bicep' = {
+  name: 'security'
+  scope: rg
+  params: {
+    location: location
+    vaultName: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
+    managedIdentityName: '${abbrs.managedIdentityUserAssignedIdentities}${resourceToken}'
+    tags: tags
+  }
+}
 
 // Shared App Env with Dapr configuration for db
 module appEnv './app/app-env.bicep' = {
@@ -81,9 +93,8 @@ module appEnv './app/app-env.bicep' = {
     cosmos_collection_name: cosmos.outputs.databaseName
     cosmos_url: cosmos.outputs.endpoint
     secretStoreName: secretStoreName
-    vaultName: keyVault.outputs.name
-    managedIdentityName: '${abbrs.managedIdentityUserAssignedIdentities}${resourceToken}'
-    principalId: principalId
+    principalId: security.outputs.managedIdentityPrincipalId
+    vaultName: security.outputs.keyVaultName
     //scopes: [apiServiceName]
   }
   dependsOn: [
@@ -104,7 +115,7 @@ module web './app/web.bicep' = {
     containerAppsEnvironmentName: appEnv.outputs.environmentName
     containerRegistryName: appEnv.outputs.registryName
     serviceName: webServiceName
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: security.outputs.keyVaultName
   }
 }
 
@@ -120,7 +131,7 @@ module api './app/api.bicep' = {
     containerAppsEnvironmentName: appEnv.outputs.environmentName
     containerRegistryName: appEnv.outputs.registryName
     serviceName: apiServiceName
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: security.outputs.keyVaultName
   }
 }
 
@@ -129,20 +140,20 @@ module apiKeyVaultAccess './core/security/keyvault-access.bicep' = {
   name: 'api-keyvault-access'
   scope: rg
   params: {
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: security.outputs.keyVaultName
     principalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
   }
 }
 
-// Give the Managed Identity access to KeyVault
-module managedIdentityKeyVaultAccess './core/security/keyvault-access.bicep' = {
-  name: 'managed-identity-keyvault-access'
-  scope: rg
-  params: {
-    keyVaultName: keyVault.outputs.name
-    principalId: appEnv.outputs.managedIdentityPrincipalId
-  }
-}
+// // Give the Managed Identity access to KeyVault
+// module managedIdentityKeyVaultAccess './core/security/keyvault-access.bicep' = {
+//   name: 'managed-identity-keyvault-access'
+//   scope: rg
+//   params: {
+//     keyVaultName: appEnv.outputs.keyVaultName
+//     principalId: appEnv.outputs.managedIdentityPrincipalId
+//   }
+// }
 
 // The application database
 module cosmos './app/db.bicep' = {
@@ -153,22 +164,22 @@ module cosmos './app/db.bicep' = {
     databaseName: cosmosDatabaseName
     location: location
     tags: tags
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: security.outputs.keyVaultName
   }
 }
 
 
-// Store secrets in a keyvault
-module keyVault './core/security/keyvault.bicep' = {
-  name: 'keyvault'
-  scope: rg
-  params: {
-    name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-    location: location
-    tags: tags
-    principalId: principalId
-  }
-}
+// // Store secrets in a keyvault
+// module keyVault './core/security/keyvault.bicep' = {
+//   name: 'keyvault'
+//   scope: rg
+//   params: {
+//     name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
+//     location: location
+//     tags: tags
+//     principalId: principalId
+//   }
+// }
 
 // Monitor application with Azure Monitor
 module monitoring './core/monitor/monitoring.bicep' = {
@@ -220,8 +231,8 @@ output APPLICATIONINSIGHTS_NAME string = monitoring.outputs.applicationInsightsN
 output AZURE_CONTAINER_ENVIRONMENT_NAME string = appEnv.outputs.environmentName
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = appEnv.outputs.registryLoginServer
 output AZURE_CONTAINER_REGISTRY_NAME string = appEnv.outputs.registryName
-output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
-output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
+output AZURE_KEY_VAULT_ENDPOINT string = security.outputs.keyVaultEndpoint
+output AZURE_KEY_VAULT_NAME string = security.outputs.keyVaultName
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 //output REACT_APP_API_BASE_URL string = useAPIM ? apimApi.outputs.SERVICE_API_URI : api.outputs.SERVICE_API_URI

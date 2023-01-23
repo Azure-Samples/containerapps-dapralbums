@@ -5,7 +5,6 @@ param containerAppsEnvName string
 param containerRegistryName string
 param secretStoreName string
 param vaultName string
-param managedIdentityName string
 param location string
 param logAnalyticsWorkspaceName string
 param principalId string
@@ -27,12 +26,6 @@ module containerApps '../core/host/container-apps.bicep' = {
 // Get App Env resource instance to parent Dapr component config under it
 resource caEnvironment  'Microsoft.App/managedEnvironments@2022-06-01-preview' existing = {
   name: containerAppsEnvName
-}
-
-// the managed identity to use throughout
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
-  name: managedIdentityName
-  location: location
 }
 
 resource daprComponentSecretStore 'Microsoft.App/managedEnvironments/daprComponents@2022-06-01-preview' = {
@@ -92,5 +85,3 @@ resource daprComponentStateStore 'Microsoft.App/managedEnvironments/daprComponen
 output environmentName string = containerApps.outputs.environmentName
 output registryLoginServer string = containerApps.outputs.registryLoginServer
 output registryName string = containerApps.outputs.registryName
-output managedIdentityPrincipalId string = managedIdentity.properties.principalId
-
