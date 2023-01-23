@@ -93,7 +93,7 @@ module appEnv './app/app-env.bicep' = {
     cosmos_collection_name: cosmos.outputs.databaseName
     cosmos_url: cosmos.outputs.endpoint
     secretStoreName: secretStoreName
-    principalId: security.outputs.managedIdentityPrincipalId
+    principalId: security.outputs.managedIdentityClientlId
     vaultName: security.outputs.keyVaultName
     //scopes: [apiServiceName]
   }

@@ -36,7 +36,7 @@ module app '../core/host/container-app.bicep' = {
     isDaprEnabled: true
     containerName: serviceName
     keyVaultName: keyVault.name
-    targetPort: 80
+    targetPort: 3000
   }
 }
 
