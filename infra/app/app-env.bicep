@@ -8,8 +8,7 @@ param vaultName string
 param location string
 param logAnalyticsWorkspaceName string
 param principalId string
-param scopes array = []
-
+param scopes array = ['albumapi']
 
 // Container apps host (including container registry)
 module containerApps '../core/host/container-apps.bicep' = {
@@ -48,6 +47,9 @@ resource daprComponentSecretStore 'Microsoft.App/managedEnvironments/daprCompone
     ]
     scopes: ['albumapi']
   }
+  dependsOn: [
+    containerApps
+  ]
 }
 
 // Dapr component configuration for shared environment, scoped to appropriate APIs
@@ -74,12 +76,15 @@ resource daprComponentStateStore 'Microsoft.App/managedEnvironments/daprComponen
       }
       {
         name: 'masterKey'
-        secretRef: 'AZURE-COSMOS-CONNECTION-STRING'
+        secretRef: 'AZURE-COSMOS-MASTER-KEY'
       }
     ]
     secretStoreComponent: secretStoreName
-    scopes: ['albumapi']
+    scopes: scopes
   }
+  dependsOn: [
+    containerApps
+  ]
 }
 
 output environmentName string = containerApps.outputs.environmentName

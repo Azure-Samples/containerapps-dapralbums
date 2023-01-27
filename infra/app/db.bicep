@@ -5,6 +5,7 @@ param tags object = {}
 param databaseName string = 'albums'
 param collectionName string = 'albums'
 param keyVaultName string
+param principalId string = ''
 
 // Because databaseName is optional in main.bicep, we make sure the database name is set here.
 var defaultDatabaseName = 'albums'
@@ -28,6 +29,22 @@ module cosmos '../core/database/cosmos/sql/cosmos-sql-db.bicep' = {
     keyVaultName: keyVaultName
     tags: tags
   }
+}
+
+module cosmosRoleDef '../core/database/cosmos/sql/cosmos-sql-role-def.bicep' = {
+  name: 'cosmos-role-def'
+  params: {
+    accountName: accountName
+  }
+}
+
+module cosmosRoleAssign '../core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = {
+  name: 'cosmos-role-assign'
+  params: {
+    roleDefinitionId: cosmosRoleDef.outputs.id
+    accountName: cosmos.outputs.accountName
+    principalId: principalId
+  } 
 }
 
 output connectionStringKey string = cosmos.outputs.connectionStringKey

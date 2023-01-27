@@ -3,6 +3,7 @@ param location string = resourceGroup().location
 param tags object = {}
 
 param connectionStringKey string = 'AZURE-COSMOS-CONNECTION-STRING'
+param masterKey string = 'AZURE-COSMOS-MASTER-KEY'
 param keyVaultName string
 
 @allowed([ 'GlobalDocumentDB', 'MongoDB', 'Parse' ])
@@ -35,6 +36,14 @@ resource cosmosConnectionString 'Microsoft.KeyVault/vaults/secrets@2022-07-01' =
   name: connectionStringKey
   properties: {
     value: cosmos.listConnectionStrings().connectionStrings[0].connectionString
+  }
+}
+
+resource cosmosMasterKey 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
+  parent: keyVault
+  name: masterKey
+  properties: {
+    value: cosmos.listKeys().primaryMasterKey
   }
 }
 

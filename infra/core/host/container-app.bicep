@@ -9,10 +9,12 @@ param env array = []
 param external bool = true
 param imageName string
 param keyVaultName string = ''
-param managedIdentity bool = !empty(keyVaultName)
+param managedIdentityEnabled bool = !empty(keyVaultName)
+param managedIdentityName string = ''
+param managedIdentityId string = ''
 param targetPort int = 80
 
-param isDaprEnabled bool = false
+param daprEnabled bool = false
 param daprApp string = containerName
 param daprAppProtocol string = 'http'
 
@@ -26,7 +28,13 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
   name: name
   location: location
   tags: tags
-  identity: { type: managedIdentity ? 'SystemAssigned' : 'None' }
+  identity: managedIdentityEnabled ? {
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity.id}' : {}
+    }
+  } : { type: 'None' }
+  dependsOn: [managedIdentity]
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
@@ -43,7 +51,7 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
         }
       ]
       dapr: {
-        enabled: isDaprEnabled
+        enabled: daprEnabled
         appId: daprApp
         appProtocol: daprAppProtocol
         appPort: targetPort
@@ -81,7 +89,13 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01-pr
   name: containerRegistryName
 }
 
-output identityPrincipalId string = managedIdentity ? app.identity.principalId : ''
+// user assigned managed identity to use throughout
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
+  name: managedIdentityName
+}
+
+output identityPrincipalId string = managedIdentityEnabled ? app.identity.principalId : ''
+output userManagedIdentitylId string = managedIdentityEnabled ? managedIdentity.id : ''
 output imageName string = imageName
 output name string = app.name
 output uri string = 'https://${app.properties.configuration.ingress.fqdn}'

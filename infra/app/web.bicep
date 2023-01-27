@@ -9,6 +9,7 @@ param containerRegistryName string
 param imageName string = ''
 param keyVaultName string
 param serviceName string = 'albumviewer'
+param managedIdentityName string = ''
 
 module app '../core/host/container-app.bicep' = {
   name: '${serviceName}-container-app-module'
@@ -33,10 +34,13 @@ module app '../core/host/container-app.bicep' = {
       }
     ]
     imageName: !empty(imageName) ? imageName : 'nginx:latest'
-    isDaprEnabled: true
+    daprEnabled: true
     containerName: serviceName
     keyVaultName: keyVault.name
     targetPort: 3000
+    managedIdentityEnabled: true
+    managedIdentityName: managedIdentityName
+    managedIdentityId: managedIdentity.id
   }
 }
 
@@ -46,6 +50,11 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
+}
+
+// user assigned managed identity to use throughout
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
+  name: managedIdentityName
 }
 
 output SERVICE_WEB_IDENTITY_PRINCIPAL_ID string = app.outputs.identityPrincipalId

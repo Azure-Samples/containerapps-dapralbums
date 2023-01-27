@@ -55,20 +55,6 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-
-// // Container apps host (including container registry)
-// module containerApps './core/host/container-apps.bicep' = {
-//   name: 'container-apps'
-//   scope: rg
-//   params: {
-//     name: 'app'
-//     containerAppsEnvironmentName: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
-//     containerRegistryName: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistryRegistries}${resourceToken}'
-//     location: location
-//     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
-//   }
-// }
-
 module security 'app/security.bicep' = {
   name: 'security'
   scope: rg
@@ -76,6 +62,7 @@ module security 'app/security.bicep' = {
     location: location
     vaultName: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
     managedIdentityName: '${abbrs.managedIdentityUserAssignedIdentities}${resourceToken}'
+    principalId: principalId
     tags: tags
   }
 }
@@ -116,6 +103,7 @@ module web './app/web.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: webServiceName
     keyVaultName: security.outputs.keyVaultName
+    managedIdentityName: security.outputs.managedIdentityName
   }
 }
 
@@ -132,7 +120,11 @@ module api './app/api.bicep' = {
     containerRegistryName: appEnv.outputs.registryName
     serviceName: apiServiceName
     keyVaultName: security.outputs.keyVaultName
+    managedIdentityName: security.outputs.managedIdentityName
   }
+  dependsOn: [
+    security
+  ]
 }
 
 // Give the API access to KeyVault
@@ -145,16 +137,6 @@ module apiKeyVaultAccess './core/security/keyvault-access.bicep' = {
   }
 }
 
-// // Give the Managed Identity access to KeyVault
-// module managedIdentityKeyVaultAccess './core/security/keyvault-access.bicep' = {
-//   name: 'managed-identity-keyvault-access'
-//   scope: rg
-//   params: {
-//     keyVaultName: appEnv.outputs.keyVaultName
-//     principalId: appEnv.outputs.managedIdentityPrincipalId
-//   }
-// }
-
 // The application database
 module cosmos './app/db.bicep' = {
   name: 'cosmos'
@@ -165,19 +147,20 @@ module cosmos './app/db.bicep' = {
     location: location
     tags: tags
     keyVaultName: security.outputs.keyVaultName
+    principalId: security.outputs.managedIdentityPrincipalId
   }
 }
 
 
-// // Store secrets in a keyvault
-// module keyVault './core/security/keyvault.bicep' = {
-//   name: 'keyvault'
+
+// // Apply r/w role assignment to CosmosDb per https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-rbac#built-in-role-definitions
+// module assignRoleDefinition './core/security/managedidentity-access.bicep' = {
+//   name: 'cosmos-access'
 //   scope: rg
 //   params: {
-//     name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-//     location: location
-//     tags: tags
-//     principalId: principalId
+//     principalId: security.outputs.managedIdentityPrincipalId
+//     roleDefinitionID: '00000000-0000-0000-0000-000000000002'
+//     resourceID: cosmos.outputs.accountName
 //   }
 // }
 
