@@ -34,7 +34,7 @@ module cosmos '../core/database/cosmos/sql/cosmos-sql-db.bicep' = {
 module cosmosRoleDef '../core/database/cosmos/sql/cosmos-sql-role-def.bicep' = {
   name: 'cosmos-role-def'
   params: {
-    accountName: accountName
+    accountName: cosmos.outputs.accountName
   }
 }
 
