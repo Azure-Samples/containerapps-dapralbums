@@ -22,6 +22,9 @@
       },
       "keyVaultName": {
         "value": "${AZURE_KEY_VAULT_NAME}"
+      },
+      "managedIdentityName": {
+        "value": "${AZURE_MANAGED_IDENTITY_NAME}"
       }
     }
   }
