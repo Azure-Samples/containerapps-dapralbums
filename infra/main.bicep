@@ -226,3 +226,5 @@ output SERVICE_WEB_NAME string = web.outputs.SERVICE_WEB_NAME
 output USE_APIM bool = useAPIM
 output PRINCIPAL_ID string = principalId
 //output SERVICE_API_ENDPOINTS array = useAPIM ? [ apimApi.outputs.SERVICE_API_URI, api.outputs.SERVICE_API_URI ]: []
+
+output AZURE_MANAGED_IDENTITY_NAME string = security.outputs.managedIdentityName
