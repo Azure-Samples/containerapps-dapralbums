@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: DaprAlbums
+services:
+  api:
+    project: ./albumapi
+    dist: build
+    language: csharp
+    host: containerapp
+    module: app/api
+  web:
+    project: ./albumviewer
+    language: js
+    host: containerapp
+    module: app/web

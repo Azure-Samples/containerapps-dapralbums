@@ -11,20 +11,37 @@
   ],
   "configurations": [
     {
+      "name": "Album API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Dapr up: Album API",
+      "postDebugTask": "Dapr down: Album API",
+      "program": "${workspaceFolder}/albumapi/bin/Debug/net7.0/albumapi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/albumapi",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://*:5000;https://*:5001",
+        "DAPR_HTTP_PORT": "3501",
+        "DAPR_GRPC_PORT": "43501"
+      }
+    },
+    {
       "name": "Album Viewer",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/album-viewer",
+      "cwd": "${workspaceFolder}/albumviewer",
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "runtimeArgs": ["run-script", "start"],
       "preLaunchTask": "Dapr up: Album Viewer",
       "postDebugTask": "Dapr down: Album Viewer",
       "env": {
-        "DAPR_HTTP_PORT": "3180",
-        "DAPR_GRPC_PORT": "3101",
+        "DAPR_HTTP_PORT": "3500",
+        "DAPR_GRPC_PORT": "43500",
         "DAPR_METRICS_PORT": "9091",
-        "ALBUM_API": "album-api",
+        "albumapi": "albumapi",
         "PORT": "3000"
       },
       "console": "integratedTerminal",
@@ -32,23 +49,20 @@
         "action": "openExternally",
         "pattern": "listening on port ([0-9]+)",
         "uriFormat": "http://localhost:%s"
-      }
-    },
-    {
-      "name": "Album API",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "Dapr up: Album API",
-      "postDebugTask": "Dapr down: Album API",
-      "program": "${workspaceFolder}/album-api/bin/Debug/net6.0/album-api.dll",
-      "args": [],
-      "cwd": "${workspaceFolder}/album-api",
-      "stopAtEntry": false,
-      "env": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://*:5000;https://*:5001",
-        "DAPR_HTTP_PORT": "3500",
-        "DAPR_GRPC_PORT": "3501"
+      },
+      "launchBrowser": {
+        "enabled": true,
+        "args": "${auto-detect-url}",
+        "windows": {
+            "command": "cmd.exe",
+            "args": "/C start ${auto-detect-url}"
+        },
+        "osx": {
+            "command": "open"
+        },
+        "linux": {
+            "command": "xdg-open"
+        }
       }
     }
   ]
