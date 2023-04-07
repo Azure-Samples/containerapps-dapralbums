@@ -1,0 +1,9 @@
+{
+    "namePrefix": "devopsoh",
+    "baseImageTag": "changeme",
+    "bingMapsKey": "Ar6iuHZYgX1BrfJs6SRJaXWbpU_HKdoe7G-OO9b2kl3rWvcawYx235GGx5FPM76O",
+    "sqlServerAdminLogin": "demousersa",
+    "sqlServerAdminPassword": "demo!P@55w0rd123",
+    "publicTeamRepo": "https://github.com/Microsoft-OpenHack/devops-artifacts",
+    "publicTeamRepoBranch": "main"
+}
