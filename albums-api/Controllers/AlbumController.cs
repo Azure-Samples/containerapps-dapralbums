@@ -18,7 +18,7 @@ namespace albums_api.Controllers
 
         // GET: api/album
         [HttpGet]
-        public List<Album> Get()
+        public IResult Get()
         {
             var albums = Album.GetAll();
 
