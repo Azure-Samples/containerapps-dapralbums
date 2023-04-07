@@ -12,24 +12,21 @@ namespace albums_api.Controllers
     [ApiController]
     public class AlbumController : ControllerBase
     {
-        private const string CollectionId = "Albums";
-        private const string AlbumStateStore = "statestore";
-        private const string DefaultHttpPort = "3500";
-
         // GET: api/album
         [HttpGet]
-        public IResult Get()
+        public IActionResult Get()
         {
             var albums = Album.GetAll();
 
-            return Results.Ok(albums);
+            return Ok(albums);
         }
 
         // GET api/<AlbumController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public IActionResult Get(int id)
         {
-            return "value";
+            return Ok();
         }
+
     }
 }
