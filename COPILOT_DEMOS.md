@@ -186,10 +186,19 @@ Try
 
 - Refactor the `AlbumController` class to use the new method you added
 
+## Writing CI pipelines
 
-# Concepts
+- Refactor the `AlbumController` class to use the new method you added
 
-WIP
+## Infra As Code
+
+- Refactor the `AlbumController` class to use the new method you added
+
+## Writing readme.md and documentation
+
+- Refactor the `AlbumController` class to use the new method you added
+
+
 
 # Extra: Copilot Labs
 
