@@ -25,7 +25,20 @@ namespace albums_api.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            return Ok();
+            // open a connection to sql server
+            var conn = new SqlConnection("Server=localhost;Database=Albums;User Id=sa;Password=Password123;");
+            conn.Open();
+
+            var result = conn.query("UPDATE * FROM Albums WHERE Id = @id", {id: id}, function(err, recordset) {
+                if (err) console.log(err);
+
+                // send records as a response
+                res.send(recordset);
+            });
+
+            conn.close();
+
+            return Ok(result);
         }
 
     }
