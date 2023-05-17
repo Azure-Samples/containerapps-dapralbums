@@ -10,6 +10,16 @@
 - [Dapr](https://docs.dapr.io/getting-started/install-dapr-cli/)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli)
 
+## Initialize Dapr
+Dapr is a developer API that powers a number of microservices features like service invoke and state management.  Dapr must be initialized just once in this 
+dev container to enable these features, APIs, and dependencies like the local Redis container.
+
+1. Initialize Dapr and depenencies.  
+
+```bash
+dapr init
+```
+
 ### Build and run with VS Code
 
 1. Fork the sample repo
@@ -22,22 +32,25 @@
 
 Any changes made to the project and checked into your GitHub repo will trigger a GitHub action to build and deploy
 
-### Build and run manually
+### Build and run 
 
 #### Steps
 
 1. Fork the sample repo
-1. Clone the repo: `git clone https://github.com/{username}/containerapps-dapralbums`
-1. Build the sample:
+2. Clone the repo: `git clone https://github.com/{username}/containerapps-dapralbums`
+3. Build the sample and install local dev cert:
+
+No steps are needed here since it's already taken care of by the `deploy/local-dev/localinit.sh` and `build.sh` scripts.
+
+4. Run the sample
 
 ```bash
-cd album-viewer
-npm install
-cd ../album-api
-dotnet restore
+tye run
 ```
 
-1. Run the sample
+Browse to port 3000 for the running application and port 8000 for the Tye dashboard to see errors
+
+(Note if you see errors or recycle of Tye, make sure you did a `dapr init` first)
 
 #### Local run and debug
 
@@ -45,18 +58,40 @@ The Dapr CLI will launch our application and dapr alongside one another. In the 
 
 For local debugging and development, the component used by the album api to manage state is a containerized redis instance running on Docker. Once deployed to Azure, this component is swapped for an Azure Storage account and because of the pluggability Dapr provides, no code changes are required in order to make this change.
 
-Now, it's time to run the `album-api` in a new terminal window- ensure you are sitting in the directory which holds the app code.
+##### Using Tye
+
+Once the projects are restored and built, the easiest way to start the microservices application is using Tye.  Simply do this in the main folder:
 
 ```bash
-cd album-api
-dapr run --app-id album-api --app-port 80 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
+tye run
+```
+
+##### Using individual `dapr run` commands
+
+Alternatively you can `dapr run` each microservice to start the app and its respective sidecar as follows:
+
+The init scripts ensure each application is restored and built before running.  You can do this manually by: 
+
+```bash
+cd albumviewer
+npm install
+cd ../albumapi
+dotnet restore
+dotnet dev-certs https
+```
+
+Now, it's time to run the `albumapi` in a new terminal window- ensure you are sitting in the directory which holds the app code.
+
+```bash
+cd albumapi
+dapr run --app-id albumapi --app-port 5007 --dapr-http-port 3500 --components-path ../dapr-components/local -- dotnet run
 ```
 
 Once the api is up and running, launch a new terminal to run the frontend application.
 
 ```bash
-cd album-viewer
-dapr run --app-id album-viewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start
+cd albumviewer
+dapr run --app-id albumviewer --app-port 3000 --dapr-http-port 3501 --components-path ../dapr-components/local -- npm run start
 ```
 
 Validate the applications are up and running by navigating to localhost:3000!
