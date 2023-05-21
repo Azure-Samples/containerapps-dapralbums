@@ -64,7 +64,7 @@ module containerApps './app/env.bicep' = {
     cosmos_collection_name: cosmos.outputs.databaseName
     cosmos_database_name: cosmos.outputs.databaseName
     cosmos_url: cosmos.outputs.endpoint
-    principalId: principalId
+    apiIdentityName: '${abbrs.managedIdentityUserAssignedIdentities}api-${resourceToken}'
     secretStoreName: 'secretstore'
     vaultName: keyVault.outputs.name
   }
@@ -95,7 +95,7 @@ module api './app/api.bicep' = {
     name: !empty(apiContainerAppName) ? apiContainerAppName : '${abbrs.appContainerApps}api-${resourceToken}'
     location: location
     tags: tags
-    identityName: '${abbrs.managedIdentityUserAssignedIdentities}api-${resourceToken}'
+    identityName: containerApps.outputs.apiIdentityName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     containerAppsEnvironmentName: containerApps.outputs.environmentName
     containerRegistryName: containerApps.outputs.registryName
@@ -118,7 +118,7 @@ module cosmos './app/db.bicep' = {
   }
 }
 
-// Store secrets in a keyvault
+// Store CosmosDb secrets in a keyvault
 module keyVault './core/security/keyvault.bicep' = {
   name: 'keyvault'
   scope: rg

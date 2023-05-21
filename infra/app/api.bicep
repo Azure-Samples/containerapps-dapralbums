@@ -11,23 +11,12 @@ param serviceName string = 'albumapi'
 param corsAcaUrl string
 param exists bool
 
-resource apiIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource apiIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: identityName
-  location: location
-}
-
-// Give the API access to KeyVault
-module apiKeyVaultAccess '../core/security/keyvault-access.bicep' = {
-  name: 'api-keyvault-access'
-  params: {
-    keyVaultName: keyVaultName
-    principalId: apiIdentity.properties.principalId
-  }
 }
 
 module app '../core/host/container-app-upsert.bicep' = {
   name: '${serviceName}-container-app'
-  dependsOn: [ apiKeyVaultAccess ]
   params: {
     name: name
     location: location

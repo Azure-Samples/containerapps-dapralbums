@@ -8,7 +8,7 @@ param vaultName string
 param location string
 param logAnalyticsWorkspaceName string
 param applicationInsightsName string
-param principalId string
+param apiIdentityName string
 param scopes array = ['albumapi']
 param tags object = {}
 
@@ -24,6 +24,21 @@ module containerApps '../core/host/container-apps.bicep' = {
     containerRegistryName: containerRegistryName
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
     applicationInsightsName: applicationInsightsName
+  }
+}
+
+// Define user assigned managed identity here to be used in Dapr component config
+resource apiIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: apiIdentityName
+  location: location
+}
+
+// Give the API access to KeyVault
+module apiKeyVaultAccess '../core/security/keyvault-access.bicep' = {
+  name: 'api-keyvault-access'
+  params: {
+    keyVaultName: vaultName
+    principalId: apiIdentity.properties.principalId
   }
 }
 
@@ -47,7 +62,7 @@ resource daprComponentSecretStore 'Microsoft.App/managedEnvironments/daprCompone
       }
       {
         name: 'azureClientId'
-        value: principalId
+        value: apiIdentity.properties.clientId
       }
     ]
     scopes: scopes
@@ -96,3 +111,4 @@ output environmentName string = containerApps.outputs.environmentName
 output registryLoginServer string = containerApps.outputs.registryLoginServer
 output registryName string = containerApps.outputs.registryName
 output defaultDomain string = containerApps.outputs.defaultDomain
+output apiIdentityName string = apiIdentity.name
