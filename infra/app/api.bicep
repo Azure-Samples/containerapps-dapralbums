@@ -7,7 +7,7 @@ param applicationInsightsName string
 param containerAppsEnvironmentName string
 param containerRegistryName string
 param keyVaultName string
-param serviceName string = 'api'
+param serviceName string = 'albumapi'
 param corsAcaUrl string
 param exists bool
 
@@ -59,7 +59,7 @@ module app '../core/host/container-app-upsert.bicep' = {
         value: corsAcaUrl
       }
     ]
-    targetPort: 3100
+    targetPort: 80
   }
 }
 

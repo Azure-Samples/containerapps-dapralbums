@@ -7,7 +7,7 @@ param apiBaseUrl string
 param applicationInsightsName string
 param containerAppsEnvironmentName string
 param containerRegistryName string
-param serviceName string = 'web'
+param serviceName string = 'albumviewer'
 param exists bool
 
 resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -42,7 +42,7 @@ module app '../core/host/container-app-upsert.bicep' = {
         value: applicationInsights.properties.ConnectionString
       }
     ]
-    targetPort: 80
+    targetPort: 3000
   }
 }
 
