@@ -39,6 +39,8 @@ module app '../core/host/container-app-upsert.bicep' = {
     containerRegistryName: containerRegistryName
     containerCpuCoreCount: '1.0'
     containerMemory: '2.0Gi'
+    daprEnabled: true
+    daprAppId: serviceName
     env: [
       {
         name: 'AZURE_CLIENT_ID'

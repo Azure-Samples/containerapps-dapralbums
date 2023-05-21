@@ -26,6 +26,8 @@ module app '../core/host/container-app-upsert.bicep' = {
     exists: exists
     containerAppsEnvironmentName: containerAppsEnvironmentName
     containerRegistryName: containerRegistryName
+    daprEnabled: true
+    daprAppId: serviceName
     env: [
       {
         name: 'REACT_APP_APPLICATIONINSIGHTS_CONNECTION_STRING'
