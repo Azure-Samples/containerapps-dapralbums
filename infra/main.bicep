@@ -50,18 +50,23 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-// Container apps host (including container registry)
-module containerApps './core/host/container-apps.bicep' = {
+// Container apps host (including container registry and Dapr components)
+module containerApps './app/env.bicep' = {
   name: 'container-apps'
   scope: rg
   params: {
-    name: 'app'
     location: location
     tags: tags
-    containerAppsEnvironmentName: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
+    containerAppsEnvName: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.appManagedEnvironments}${resourceToken}'
     containerRegistryName: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistryRegistries}${resourceToken}'
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
+    cosmos_collection_name: cosmos.outputs.databaseName
+    cosmos_database_name: cosmos.outputs.databaseName
+    cosmos_url: cosmos.outputs.endpoint
+    principalId: principalId
+    secretStoreName: 'secretstore'
+    vaultName: keyVault.outputs.name
   }
 }
 
