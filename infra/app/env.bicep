@@ -50,7 +50,7 @@ resource daprComponentSecretStore 'Microsoft.App/managedEnvironments/daprCompone
         value: principalId
       }
     ]
-    scopes: ['albumapi']
+    scopes: scopes
   }
   dependsOn: [
     containerApps

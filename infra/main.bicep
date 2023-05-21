@@ -52,7 +52,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 // Container apps host (including container registry and Dapr components)
 module containerApps './app/env.bicep' = {
-  name: 'container-apps'
+  name: 'container-apps-main'
   scope: rg
   params: {
     location: location
