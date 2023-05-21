@@ -20,7 +20,7 @@ module app '../core/host/container-app-upsert.bicep' = {
   params: {
     name: name
     location: location
-    tags: union(tags, { 'azd-service-name': serviceName })
+    tags: union(tags, { 'azd-service-name': 'web' })
     identityType: 'UserAssigned'
     identityName: identityName
     exists: exists
