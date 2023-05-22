@@ -31,23 +31,7 @@ module cosmos '../core/database/cosmos/sql/cosmos-sql-db.bicep' = {
   }
 }
 
-module cosmosRoleDef '../core/database/cosmos/sql/cosmos-sql-role-def.bicep' = {
-  name: 'cosmos-role-def'
-  params: {
-    accountName: cosmos.outputs.accountName
-  }
-}
-
-module cosmosRoleAssign '../core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = {
-  name: 'cosmos-role-assign'
-  params: {
-    roleDefinitionId: cosmosRoleDef.outputs.id
-    accountName: cosmos.outputs.accountName
-    principalId: principalId
-  } 
-}
-
 output connectionStringKey string = cosmos.outputs.connectionStringKey
 output databaseName string = cosmos.outputs.databaseName
-output accountName string = accountName
+output accountName string = cosmos.outputs.accountName
 output endpoint string = cosmos.outputs.endpoint

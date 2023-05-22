@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: DaprAlbums
+name: dapr-albums-comosdb-aca
+metadata:
+  template: dapr-albums-comosdb-aca@0.0.1-beta
 services:
   api:
     project: ./albumapi
